@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg
+   width="420mm"
+   height="297mm"
+   viewBox="0 0 420 297"
+   version="1.1"
+   id="svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:freecad="https://www.freecad.org/wiki/index.php?title=Svg_Namespace">
+  <title id="title">Drawing sheet ISO 5457 - A3T - Advanced</title>
+  <metadata id="metadata">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <cc:license rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:title>Drawing sheet ISO 5457 - A3T - Advanced</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Benjamin May</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <rect id="drawing_space_frame" x="20" y="10" width="390" height="277" style="fill:none;stroke:#000000;stroke-width:0.7;stroke-linecap:round;stroke-linejoin:round" />
+  <g id="centring_marks" style="fill:none;stroke:#000000;stroke-width:0.7;stroke-linecap:round">
+    <path id="top_centering" d="m 210,5 v 10" />
+    <path id="right_centering" d="m 415,148.5 h -10" />
+    <path id="bottom_centering" d="m 210,292 v -10" />
+    <path id="left_centering" d="m 15,148.5 h 10" />
+  </g>
+  <g id="grid_reference_system">
+    <g id="grid_reference_borders" style="fill:none;stroke:#000000;stroke-width:0.35;stroke-linecap:round;stroke-linejoin:round">
+      <rect id="grid_reference_border"  x="15" y="5" width="400" height="287" />
+      <path id="upper_border_1" d="m 60,5 v 5"/>
+      <path id="upper_border_2" d="m 110,5 v 5"/>
+      <path id="upper_border_3" d="m 160,5 v 5"/>
+      <path id="upper_border_5" d="m 260,5 v 5"/>
+      <path id="upper_border_6" d="m 310,5 v 5"/>
+      <path id="upper_border_7" d="m 360,5 v 5"/>
+      <path id="right_border_1" d="m 415,48.5 h -5"/>
+      <path id="right_border_2" d="m 415,98.5 h -5"/>
+      <path id="right_border_4" d="m 415,198.5 h -5"/>
+      <path id="right_border_5" d="m 415,248.5 h -5"/>
+      <path id="lower_border_1" d="m 60,292 v -5"/>
+      <path id="lower_border_2" d="m 110,292 v -5"/>
+      <path id="lower_border_3" d="m 160,292 v -5"/>
+      <path id="lower_border_5" d="m 260,292 v -5"/>
+      <path id="lower_border_6" d="m 310,292 v -5"/>
+      <path id="lower_border_7" d="m 360,292 v -5"/>
+      <path id="left_border_1" d="m 15,48.5 h 5"/>
+      <path id="left_border_2" d="m 15,98.5 h 5"/>
+      <path id="left_border_4" d="m 15,198.5 h 5"/>
+      <path id="left_border_5" d="m 15,248.5 h 5"/>
+    </g>
+    <g id="grid_reference_markers" style="font-size:3.5px;font-family:osifont;text-align:center;text-anchor:middle;fill:#000000;stroke:none">
+      <text id="upper_marker_1" x="35" y="8.8">1</text>
+      <text id="upper_marker_2" x="85" y="8.8">2</text>
+      <text id="upper_marker_3" x="135" y="8.8">3</text>
+      <text id="upper_marker_4" x="185" y="8.8">4</text>
+      <text id="upper_marker_5" x="235" y="8.8">5</text>
+      <text id="upper_marker_6" x="285" y="8.8">6</text>
+      <text id="upper_marker_7" x="335" y="8.8">7</text>
+      <text id="upper_marker_8" x="385" y="8.8">8</text>
+      <text id="right_marker_1" x="412.5" y="24.8">A</text>
+      <text id="right_marker_2" x="412.5" y="74.8">B</text>
+      <text id="right_marker_3" x="412.5" y="124.8">C</text>
+      <text id="right_marker_4" x="412.5" y="174.8">D</text>
+      <text id="right_marker_5" x="412.5" y="224.8">E</text>
+      <text id="right_marker_6" x="412.5" y="274.8">F</text>
+      <text id="lower_marker_1" x="35" y="290.8">1</text>
+      <text id="lower_marker_2" x="85" y="290.8">2</text>
+      <text id="lower_marker_3" x="135" y="290.8">3</text>
+      <text id="lower_marker_4" x="185" y="290.8">4</text>
+      <text id="lower_marker_5" x="235" y="290.8">5</text>
+      <text id="lower_marker_6" x="285" y="290.8">6</text>
+      <text id="lower_marker_7" x="335" y="290.8">7</text>
+      <text id="lower_marker_8" x="385" y="290.8">A3</text>
+      <text id="left_marker_1" x="17.5" y="24.8">A</text>
+      <text id="left_marker_2" x="17.5" y="74.8">B</text>
+      <text id="left_marker_3" x="17.5" y="124.8">C</text>
+      <text id="left_marker_4" x="17.5" y="174.8">D</text>
+      <text id="left_marker_5" x="17.5" y="224.8">E</text>
+      <text id="left_marker_6" x="17.5" y="274.8">F</text>
+    </g>
+  </g>
+  <g id="trimming_marks" style="fill:#000000;stroke:none">>
+    <path id="top_left_trimming" d="m 0,0 h 10 v 5 h -5 v 5 h -5 z" />
+    <path id="top_right_trimming" d="m 420,0 h -10 v 5 h 5 v 5 h 5 z" />
+    <path id="bottom_right_trimming" d="m 420,297 h -10 v -5 h 5 v -5 h 5 z" />
+    <path id="bottom_left_trimming" d="m 0,297 h 10 v -5 h -5 v -5 h -5 z" />
+  </g>
+<!-- Title block -->
+  <g id="title_block_borders" style="fill:none;stroke:#000000;stroke-width:0.35;stroke-linecap:round;stroke-linejoin:round">
+    <rect id="title_block_frame" x="230" y="239" width="180" height="48" style="stroke-width:0.7"/>
+    <rect id="legal_owner_border" x="370" y="239" width="40" height="24"/>
+    <rect id="identification_number_border" x="310" y="263" width="60" height="12"/>
+    <rect id="revision_index_border" x="370" y="275" width="20" height="12"/>
+    <rect id="date_of_issue_border" x="330" y="275" width="40" height="12"/>
+    <rect id="sheet_number_border" x="390" y="275" width="20" height="12"/>
+    <rect id="language_code_border" x="310" y="275" width="20" height="12"/>
+    <rect id="title_border" x="230" y="239" width="80" height="24"/>
+    <rect id="responsible_department_border" x="370" y="263" width="40" height="12"/>
+    <rect id="approval_person_border" x="310" y="251" width="60" height="12"/>
+    <rect id="creator_border" x="310" y="239" width="60" height="12"/>
+    <rect id="document_type_border" x="230" y="263" width="80" height="12"/>
+    <rect id="document_status_border" x="230" y="275" width="80" height="12"/>
+  </g>
+  <g id="title_block_labels" style="font-size:3.5px;font-family:osifont;text-anchor:start;fill:#000000;stroke:none">
+    <text id="legal_owner_label" x="370.5" y="242.6">Owner:</text>
+    <text id="identification_number_label" x="310.5" y="266.6">Drawing number:</text>
+    <text id="revision_index_label" x="370.5" y="278.6">Revision:</text>
+    <text id="date_of_issue_label" x="330.5" y="278.6">Issue date:</text>
+    <text id="sheet_number_label" x="390.5" y="278.6">Sheet:</text>
+    <text id="language_code_label" x="310.5" y="278.6">Language:</text>
+    <text id="title_label" x="230.5" y="242.6">Title, supplementary title:</text>
+    <text id="responsible_department_label" x="370.5" y="266.6">Responsible department:</text>
+    <text id="approval_person_label" x="310.5" y="254.6">Approved by:</text>
+    <text id="creator_label" x="310.5" y="242.6">Created by:</text>
+    <text id="document_type label" x="230.5" y="266.6">Document type:</text>
+    <text id="document_status_label" x="230.5" y="278.6">Document status:</text>
+    <text id="sheet_scale_label" x="350.5" y="230.6">Scale:</text>
+    <text id="general_tolerances_label" x="310.5" y="230.6">General tolerances:</text>
+    <text id="part_material_label" x="230.5" y="230.6">Part Material:</text>
+  </g>
+  <g id="title_block_data_fields" style="font-size:5px;font-family:osifont;text-anchor:start;fill:#000000;stroke:none">
+    <text id="legal_owner_1_data_field" x="390" y="246.6" freecad:editable="legal_owner_1" freecad:autofill="organization" style="font-size:3.5px;text-align:center;text-anchor:middle"><tspan/></text>
+    <text id="legal_owner_2_data_field" x="390" y="250.6" freecad:editable="legal_owner_2" style="font-size:3.5px;text-align:center;text-anchor:middle"><tspan/></text>
+    <text id="legal_owner_3_data_field" x="390" y="254.6" freecad:editable="legal_owner_3" style="font-size:3.5px;text-align:center;text-anchor:middle"><tspan/></text>
+    <text id="legal_owner_4_data_field" x="390" y="258.6" freecad:editable="legal_owner_4" style="font-size:3.5px;text-align:center;text-anchor:middle"><tspan/></text>
+    <text id="identification_number_data_field" x="311" y="272.2" freecad:editable="drawing_number"><tspan>DN</tspan></text>
+    <text id="revision_index_data_field" x="380" y="284.2" freecad:editable="revision_index" style="text-align:center;text-anchor:middle"><tspan>AAA</tspan></text>
+    <text id="date_of_issue_data_field" x="331" y="284.2" freecad:editable="date_of_issue" freecad:autofill="date"><tspan>YYYY-MM-DD</tspan></text>
+    <text id="sheet_number_data_field" x="400" y="284.2" freecad:editable="sheet_number" freecad:autofill="sheet" style="text-align:center;text-anchor:middle"><tspan>X / Y</tspan></text>
+    <text id="language_data_field" x="320" y="284.2" freecad:editable="language_code" style="text-align:center;text-anchor:middle"><tspan>EN</tspan></text>
+    <text id="title_data_field" x="231" y="248.2" freecad:editable="title" freecad:autofill="title"><tspan>ISO 7200 titleblock</tspan></text>
+    <text id="supplementary_title_1_data_field" x="231" y="254.2" freecad:editable="supplementary_title_1"><tspan>ST1</tspan></text>
+    <text id="supplementary_title_2_data_field" x="231" y="260.2" freecad:editable="supplementary_title_2"><tspan>ST2</tspan></text>
+    <text id="responsible_department_data_field" x="371" y="272.2" freecad:editable="responsible_department"><tspan>RD</tspan></text>
+    <text id="approval_person_data_field" x="311" y="260.2" freecad:editable="approval_person"><tspan>B. Hecate</tspan></text>
+    <text id="creator_data_field" x="311" y="248.2" freecad:editable="creator" freecad:autofill="author"><tspan>A. Nemesis</tspan></text>
+    <text id="document_type_data_field" x="231" y="272.2" freecad:editable="document_type"><tspan>Component Drawing</tspan></text>
+    <text id="document_status_data_field" x="231" y="284.2" freecad:editable="document_status"><tspan>In preparation</tspan></text>
+    <text id="sheet_scale_data_field" x="360" y="236.2" freecad:editable="scale" freecad:autofill="scale" style="text-align:center;text-anchor:middle"><tspan>1 : 1</tspan></text>
+    <text id="general_tolerances_data_field" x="311" y="236.2" freecad:editable="general_tolerances"><tspan>ISO 2768-m</tspan></text>
+    <text id="part_material_data_field" x="231" y="236.2" freecad:editable="part_material"><tspan>Stainless steel Mat.No. 1.4301</tspan></text>
+  </g>
+  <g id="extras_outlines" style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:round;stroke-linejoin:round">
+    <path id="first_angle_trapezoid" d="m 389,222 -10,2.5 v 5 l 10,2.5 z"/>
+    <circle id="first_angle_inner circle" cx="396" cy="227" r="2.5"/>
+    <circle id="first_angle_outer circle" cx="396" cy="227" r="5"/>
+  </g>
+  <g id="extras_centre_lines" style="fill:none;stroke:#000000;stroke-width:0.25;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:6, 0.75, 0.125, 0.75">
+    <path id="first_angle_horizontal" d="m 378,227 h 24" style="stroke-dashoffset:0.25"/>
+    <path id="first_angle_vertical" d="m 396,233 v -12" style="stroke-dashoffset:4.625"/>
+  </g>
+  <g id="company_logo" transform="translate(386, 252.5) scale(0.012)">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M371.195 0.229379C401.553 2.50103 427.12 24.6416 434.205 54.7956C434.607 56.5029 434.993 58.1289 435.069 58.4139C435.165 58.7891 436.494 58.9316 439.926 58.9316C475.49 58.9316 509.053 79.7285 523.998 111.025C530.682 125.025 533.282 136.732 533.297 152.861L533.303 161.825L535.842 163.817C588.794 205.338 580.533 288.191 520.394 318.775C501.383 328.441 493.012 329.735 449.391 329.741L420.758 329.744V346.28V362.815L419.229 366.64C408.181 394.304 381.652 421.619 350.299 437.608L345.75 439.929L340.334 439.886C317.987 439.702 300.189 424.851 296.714 403.487C296.152 400.043 296.158 63.9578 296.719 59.3447C297.621 51.9276 299.471 45.4181 302.394 39.3856C303.139 37.844 303.75 36.4915 303.75 36.378C303.75 36.2646 304.535 34.9208 305.495 33.3908C320.125 10.0373 343.645 -1.82994 371.195 0.229379ZM357.365 28.9755C339.776 32.0529 327.094 45.8078 324.404 64.7198C324.226 65.9706 324.064 85.7377 324.046 108.649L324.011 150.304H330.337H336.664L337.528 148.547C343.95 135.525 364.52 136.15 370.718 149.559C380.494 170.714 350.608 187.918 338.159 168.303L336.655 165.932L331.469 166.165C328.618 166.296 325.774 166.406 325.148 166.415L324.011 166.429V204.088C324.011 224.8 324.151 241.685 324.319 241.609C324.491 241.533 332.792 233.145 342.766 222.968L360.902 204.466H392.69H424.479V180.708C424.479 157.148 424.487 156.944 425.331 156.493C426.107 156.077 436.547 152.072 443.085 149.681C460.642 143.259 483.742 142.407 502.744 147.477C506.706 148.535 506.555 148.707 505.941 143.809C499.257 90.6242 433.935 66.1945 392.449 101.369L389.563 103.812L388.932 107.73C385.098 131.47 351.291 129.018 351.757 105.031C351.937 95.6678 358.929 87.6283 367.65 86.7586C370.003 86.523 370.282 86.366 374.037 83.149C379.962 78.0793 381.466 76.9362 386.108 73.9781C390.904 70.9182 398.531 67.1137 403.848 65.1271L407.399 63.7978L406.657 60.6419C401.544 38.9376 379.901 25.0343 357.365 28.9755ZM470.575 167.058C462.253 167.98 455.773 169.475 448.667 172.11L446.599 172.878L446.491 196.528L446.387 220.178L411.969 220.187L377.554 220.196L350.806 247.784L324.061 275.376L324.04 336.565C324.02 403.19 323.924 400.337 326.329 405.084C329.581 411.497 335.774 414.708 344.889 414.708C353.755 414.708 352.958 415.142 369.904 401.087C378.141 394.255 388.513 383.327 393.086 376.669L394.505 374.604L394.712 339.459L394.918 304.317L439.362 304.093C478.51 303.895 484.254 303.784 487.535 303.176C534.117 294.529 558.186 247.761 537.893 205.327C527.221 183.009 502.913 167.412 477.337 166.47C476.732 166.447 473.69 166.711 470.575 167.058ZM498.073 197.689C518.978 203.282 515.572 234.576 494.053 234.64L491.066 234.649L489.091 237.458C488.006 239.003 483.303 245.419 478.641 251.717L470.165 263.165L439.511 263.171L408.856 263.177L397.55 274.651C391.332 280.96 382.012 290.407 376.838 295.64L367.429 305.157L367.234 324.276L367.039 343.394L368.781 344.473C387.862 356.268 374.04 385.444 352.83 378.147C338.365 373.17 336.387 352.178 349.663 344.575L352.1 343.182L352.112 320.62L352.126 298.057L377.234 272.554L402.344 247.051H431.945H461.546L462.404 246.123C465.313 242.97 477.8 225.705 477.57 225.152C470.973 209.311 482.718 193.579 498.073 197.689ZM570.781 325.506C570.879 346.893 570.798 351.989 570.356 352.527C570.001 352.958 566.156 354.025 559.472 355.552C553.785 356.847 548.576 358.092 547.895 358.316C547.212 358.54 543.306 359.467 539.213 360.381C511.924 366.463 510.301 366.969 509.635 369.587C505.932 384.176 496.95 405.546 488.908 418.903C487.32 421.541 485.921 423.952 485.802 424.263C485.682 424.575 486.875 426.645 488.451 428.865C508.123 456.57 520.813 474.978 520.813 475.804C520.813 476.689 460.197 536.47 459.301 536.47C459.106 536.47 447.056 528.573 432.518 518.919L406.084 501.368L404.429 502.311C403.519 502.832 400.913 504.341 398.638 505.668C389.793 510.83 372.228 518.797 363.662 521.531C362.205 521.997 359.433 522.916 357.498 523.576C355.567 524.233 352.126 525.28 349.852 525.9C341.216 528.259 342.682 526.075 339.543 541.226C336.163 557.517 335.166 562.226 334.613 564.477C334.29 565.786 333.52 569.277 332.9 572.235C332.28 575.19 331.37 579.469 330.878 581.743L329.986 585.876L285.571 585.984C261.144 586.042 241.022 585.949 240.856 585.777C240.693 585.606 240.265 584.07 239.908 582.363C239.151 578.756 238.142 574.12 236.356 566.031C235.652 562.849 234.815 558.942 234.492 557.348C234.172 555.757 233.436 552.316 232.86 549.701C232.284 547.087 231.054 541.133 230.129 536.47L228.445 527.994L223.2 526.607C205.592 521.944 186.647 514.132 171.104 505.126L164.356 501.217L163.044 502.189C158.026 505.909 112.134 536.057 111.488 536.057C110.584 536.057 106.773 532.433 77.5908 503.809C66.791 493.213 56.9569 483.626 55.7382 482.503C54.5223 481.38 52.6026 479.394 51.4711 478.088L49.4177 475.717L53.5043 469.813C61.3693 458.46 81.0318 430.395 83.0242 427.681C85.4442 424.383 85.4587 425.22 82.9049 420.84C72.3145 402.696 66.2413 388.507 60.8923 369.409L60.2495 367.105L51.6573 365.136C46.9337 364.051 40.0926 362.457 36.4539 361.591C32.8151 360.727 27.6988 359.517 25.0839 358.903C22.4691 358.289 17.2597 357.053 13.5075 356.157C9.75536 355.259 5.47387 354.241 3.99628 353.892C2.51869 353.545 1.02946 353.179 0.689148 353.083C0.025977 352.894 -0.299768 299.148 0.363403 299.148C0.526287 299.148 1.40173 300.244 2.31213 301.582C17.8821 324.511 46.8464 343.729 73.6641 348.921C83.9665 350.916 85.8107 351.035 106.206 351.035H125.519L126.127 352.69C126.462 353.601 127.515 356.576 128.466 359.304C144.9 406.439 180.635 442.573 228.404 460.351C246.487 467.081 258.43 469.362 281.632 470.514C314.165 472.131 353.525 459.915 381.893 439.391C400.503 425.927 413.266 412.396 427.102 391.46C432.768 382.888 440.546 365.494 444.097 353.446L444.851 350.893L462.468 350.878C493.963 350.852 505.127 348.67 525.603 338.543C541.607 330.625 561.176 313.61 569.128 300.698C569.652 299.846 570.213 299.148 570.37 299.148C570.53 299.148 570.714 311.009 570.781 325.506Z" fill="black"/>
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M199.797 0.229379C169.439 2.50103 143.872 24.6416 136.787 54.7956C136.385 56.5029 135.998 58.1289 135.923 58.4139C135.827 58.7891 134.498 58.9316 131.065 58.9316C95.5013 58.9316 61.9385 79.7285 46.9939 111.025C40.3098 125.025 37.7095 136.732 37.695 152.861L37.6891 161.825L35.1499 163.817C-17.802 205.338 -9.54142 288.191 50.5977 318.775C69.6086 328.441 77.9797 329.735 121.601 329.741L150.233 329.744V346.28V362.815L151.763 366.64C162.81 394.304 189.34 421.619 220.692 437.608L225.241 439.929L230.657 439.886C253.004 439.702 270.802 424.851 274.278 403.487C274.84 400.043 274.834 63.9578 274.272 59.3447C273.371 51.9276 271.521 45.4181 268.598 39.3856C267.853 37.844 267.242 36.4915 267.242 36.378C267.242 36.2646 266.457 34.9208 265.497 33.3908C250.867 10.0373 227.347 -1.82994 199.797 0.229379ZM213.627 28.9755C231.216 32.0529 243.898 45.8078 246.588 64.7198C246.765 65.9706 246.928 85.7377 246.946 108.649L246.981 150.304H240.654H234.328L233.464 148.547C227.042 135.525 206.472 136.15 200.274 149.559C190.498 170.714 220.384 187.918 232.833 168.303L234.337 165.932L239.523 166.165C242.373 166.296 245.218 166.406 245.843 166.415L246.981 166.429V204.088C246.981 224.8 246.841 241.685 246.672 241.609C246.501 241.533 238.199 233.145 228.226 222.968L210.09 204.466H178.302H146.513V180.708C146.513 157.148 146.504 156.944 145.661 156.493C144.884 156.077 134.445 152.072 127.907 149.681C110.35 143.259 87.2495 142.407 68.2474 147.477C64.2858 148.535 64.437 148.707 65.0508 143.809C71.7348 90.6242 137.057 66.1945 178.543 101.369L181.429 103.812L182.06 107.73C185.893 131.47 219.7 129.018 219.235 105.031C219.055 95.6678 212.062 87.6283 203.342 86.7586C200.989 86.523 200.71 86.366 196.955 83.149C191.03 78.0793 189.526 76.9362 184.884 73.9781C180.088 70.9182 172.461 67.1137 167.144 65.1271L163.593 63.7978L164.334 60.6419C169.448 38.9376 191.091 25.0343 213.627 28.9755ZM100.417 167.058C108.739 167.98 115.219 169.475 122.325 172.11L124.393 172.878L124.501 196.528L124.605 220.178L159.023 220.187L193.438 220.196L220.186 247.784L246.931 275.376L246.952 336.565C246.972 403.19 247.068 400.337 244.662 405.084C241.411 411.497 235.218 414.708 226.102 414.708C217.237 414.708 218.034 415.142 201.088 401.087C192.851 394.255 182.479 383.327 177.906 376.669L176.487 374.604L176.28 339.459L176.074 304.317L131.63 304.093C92.4822 303.895 86.7376 303.784 83.4567 303.176C36.8747 294.529 12.8057 247.761 33.0993 205.327C43.7711 183.009 68.0786 167.412 93.6544 166.47C94.2594 166.447 97.3018 166.711 100.417 167.058ZM72.9186 197.689C52.0142 203.282 55.4202 234.576 76.9384 234.64L79.9256 234.649L81.9005 237.458C82.9854 239.003 87.6887 245.419 92.3513 251.717L100.827 263.165L131.481 263.171L162.135 263.177L173.441 274.651C179.66 280.96 188.979 290.407 194.154 295.64L203.563 305.157L203.758 324.276L203.953 343.394L202.211 344.473C183.13 356.268 196.952 385.444 218.162 378.147C232.626 373.17 234.604 352.178 221.329 344.575L218.892 343.182L218.88 320.62L218.866 298.057L193.758 272.554L168.648 247.051H139.047H109.445L108.587 246.123C105.679 242.97 93.1919 225.705 93.4217 225.152C100.018 209.311 88.2734 193.579 72.9186 197.689ZM0.211268 325.506C0.112374 346.893 0.193805 351.989 0.635919 352.527C0.990773 352.958 4.83601 354.025 11.5201 355.552C17.2065 356.847 22.4158 358.092 23.0965 358.316C23.78 358.54 27.6863 359.467 31.7788 360.381C59.0677 366.463 60.6907 366.969 61.3568 369.587C65.0595 384.176 74.0414 405.546 82.0838 418.903C83.6719 421.541 85.071 423.952 85.1902 424.263C85.3095 424.575 84.1169 426.645 82.5404 428.865C62.8693 456.57 50.1789 474.978 50.1789 475.804C50.1789 476.689 110.795 536.47 111.691 536.47C111.886 536.47 123.936 528.573 138.474 518.919L164.907 501.368L166.562 502.311C167.473 502.832 170.079 504.341 172.354 505.668C181.199 510.83 198.764 518.797 207.33 521.531C208.787 521.997 211.559 522.916 213.493 523.576C215.425 524.233 218.866 525.28 221.14 525.9C229.776 528.259 228.31 526.075 231.449 541.226C234.828 557.517 235.826 562.226 236.379 564.477C236.701 565.786 237.472 569.277 238.092 572.235C238.711 575.19 239.622 579.469 240.113 581.743L241.006 585.876L285.421 585.984C309.848 586.042 329.97 585.949 330.136 585.777C330.299 585.606 330.726 584.07 331.084 582.363C331.84 578.756 332.85 574.12 334.636 566.031C335.339 562.849 336.177 558.942 336.5 557.348C336.82 555.757 337.556 552.316 338.132 549.701C338.708 547.087 339.938 541.133 340.863 536.47L342.547 527.994L347.791 526.607C365.4 521.944 384.344 514.132 399.888 505.126L406.636 501.217L407.948 502.189C412.965 505.909 458.858 536.057 459.504 536.057C460.408 536.057 464.219 532.433 493.401 503.809C504.201 493.213 514.035 483.626 515.254 482.503C516.469 481.38 518.389 479.394 519.521 478.088L521.574 475.717L517.487 469.813C509.623 458.46 489.96 430.395 487.968 427.681C485.548 424.383 485.533 425.22 488.087 420.84C498.677 402.696 504.751 388.507 510.1 369.409L510.742 367.105L519.334 365.136C524.058 364.051 530.899 362.457 534.538 361.591C538.177 360.727 543.293 359.517 545.908 358.903C548.523 358.289 553.732 357.053 557.484 356.157C561.236 355.259 565.518 354.241 566.996 353.892C568.473 353.545 569.962 353.179 570.303 353.083C570.966 352.894 571.292 299.148 570.628 299.148C570.466 299.148 569.59 300.244 568.68 301.582C553.11 324.511 524.145 343.729 497.328 348.921C487.025 350.916 485.181 351.035 464.786 351.035H445.472L444.864 352.69C444.53 353.601 443.477 356.576 442.526 359.304C426.092 406.439 390.356 442.573 342.588 460.351C324.505 467.081 312.562 469.362 289.36 470.514C256.826 472.131 217.467 459.915 189.099 439.391C170.489 425.927 157.726 412.396 143.89 391.46C138.224 382.888 130.446 365.494 126.894 353.446L126.141 350.893L108.523 350.878C77.0285 350.852 65.8652 348.67 45.3883 338.543C29.385 330.625 9.81561 313.61 1.86338 300.698C1.33982 299.846 0.77845 299.148 0.621383 299.148C0.461408 299.148 0.278167 311.009 0.211268 325.506Z" fill="black"/>
+  </g>
+</svg>
