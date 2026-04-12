@@ -95,7 +95,7 @@ Defense variants append `-D`:
 
 ## Toolchain
 
-The fabrication flow follows the same CadQuery-based pattern used in [`engineering-with-ai/mechanical-model`](../../engineering-with-ai/mechanical-model):
+The fabrication flow is CadQuery-based:
 
 ```
 parametric model.py (CadQuery) → STEP → DXF + GD&T drawing → BOM line item + penetration schedule
