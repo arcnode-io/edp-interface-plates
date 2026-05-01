@@ -3,6 +3,7 @@
 Checks BRep validity, bounding box vs constants, and positive volume.
 """
 
+import cadquery as cq
 import pytest
 
 from cad.model.model import build_bracket
@@ -18,6 +19,7 @@ from sim.constants import (
 def validate() -> None:
     """Run all geometry checks on the L-bracket solid."""
     solid = build_bracket().val()
+    assert isinstance(solid, cq.Shape)
 
     # BRep validity (OCC BRepCheck_Analyzer)
     assert solid.isValid(), "BRep defects detected"

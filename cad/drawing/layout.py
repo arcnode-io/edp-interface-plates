@@ -62,6 +62,7 @@ def compute_layout(
         ortho_h = th + gap + fh
         total_w = ortho_w + (gap + iso_est if has_iso else 0)
 
+        right_half_cx = 0.0
         if has_iso:
             left_half_w = usable_w * 0.55
             right_half_cx = usable_l + left_half_w + (usable_w - left_half_w) / 2
