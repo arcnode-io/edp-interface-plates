@@ -6,7 +6,7 @@
 ![](https://img.shields.io/badge/cad-cadquery-blue)
 ![](https://img.shields.io/badge/material-6061--T6-gray)
 
-> interface plates that mount to container end walls and organize all inter-module connections
+> interface plates that mount to container end walls and organize all power, comms, and fluid connections
 
 
 ## Architecture Context
@@ -26,18 +26,26 @@ flexible_assembly -r- plate_b
 
 Containers are placed face-to-face. Plates mate as a pair via flexible assemblies — there is **no hard-dock interface**. Containers tolerate ±25mm horizontal and ±10mm vertical misalignment, absorbed by hose/cable service loops.
 
+## Power Path
+
+```
+External BESS  →  BG  →  Grid Container  →  CG  →  Compute Container (415Y/240V AC)
+```
+
+Grid container always present. PCS lives in grid container when BESS is DC-coupled; when AC-coupled the BESS lands on grid switchgear directly.
+
 ## Plate Variants
 
-Six variants cover all module-adjacency combinations. Variant codes follow `[Module A]-[Module B]-[String/Port Count]` where applicable.
+Variant codes follow `[Container A][Container B]-[Coupling]-[String/Port Count]` where applicable.
 
 | Variant | Used When | Carries | Plate Codes |
 |---|---|---|---|
-| **BG** | Grid Module present | DC power, grounding, data | `BG-2`, `BG-4`, `BG-8` (per BESS string count) |
-| **BB** | `N_BESS > 1` | Data + grounding only (no DC) | `BB` (fixed) |
-| **CT** | Always (1:1 Compute:Thermal) | Cooling fluid + sensor data | `CT` (QD port size [OPEN] pending GPU vendor DLC spec) |
-| **CG** | Grid Module present | AC feeder + data | `CG` (fixed, conduit sized from sizing engine Module F) |
-| **CB** | `grid_connection == 'none'` | Off-grid AC feeder + data | `CB` (variant of CG) |
-| **EX** | All deployments | External services on long wall | `EX-T`, `EX-G`, `EX-B`, `EX-C` (per module type) |
+| **BG-AC** | External BESS lands AC at grid container (Tesla Megapack, Tesla Megablock, CATL EnerOne with integrated PCS) | AC feeder, grounding, data | `BG-AC` (conduit sized from BESS AC interconnect spec) |
+| **BG-DC** | External BESS lands DC at grid container; PCS lives in grid container (CATL EnerOne, external PCS) | DC bus, grounding, data | `BG-DC-2`, `BG-DC-4`, `BG-DC-8` (per BESS string count) |
+| **CG** | All deployments | AC feeder (415Y/240V) + data | `CG` (fixed, conduit sized from sizing engine Module F) |
+| **CD** | All deployments (1:1 Compute:Drycooler) | Coolant supply/return + drycooler comms (VFD Modbus, fan tach, leak sensor) | `CD` (QD port size [OPEN] pending GPU vendor DLC spec) |
+| **EX-G** | All deployments | External site services on Grid Container long wall | `EX-G` |
+| **EX-C** | All deployments | External site services on Compute Container long wall | `EX-C` |
 
 See the spec doc for full penetration schedules per variant.
 
@@ -61,12 +69,12 @@ For every plate variant required by a deployment, the implementation outputs:
 2. **BOM line item** — structured JSON referencing the drawing:
    ```json
    {
-     "part_number": "ARC-PLT-BG4-001",
-     "description": "Interface Plate, BESS-to-Grid-Module, 4-String",
+     "part_number": "ARC-PLT-BG-DC-4-001",
+     "description": "Interface Plate, BESS-to-Grid DC-Coupled, 4-String",
      "qty": 1,
      "material": "6061-T6 aluminum",
      "finish": "Type II anodize",
-     "drawing_ref": "ARC-PLT-BG4-001.dxf",
+     "drawing_ref": "ARC-PLT-BG-DC-4-001.dxf",
      "type": "custom_fabrication"
    }
    ```
@@ -78,19 +86,17 @@ For every plate variant required by a deployment, the implementation outputs:
 ARC - PLT - [VARIANT CODE] - [REVISION]
 
 Examples:
-  ARC-PLT-BG2-001    BESS-Grid, 2-String
-  ARC-PLT-BG4-001    BESS-Grid, 4-String
-  ARC-PLT-BG8-001    BESS-Grid, 8-String
-  ARC-PLT-BB-001     BESS-BESS daisy chain
-  ARC-PLT-CT-001     Compute-Thermal           [OPEN: QD port size]
-  ARC-PLT-CG-001     Compute-Grid
-  ARC-PLT-CB-001     Compute-BESS (off-grid)
-  ARC-PLT-EX-T-001   External services, Thermal Module
-  ARC-PLT-EX-G-001   External services, Grid Module
-  ARC-PLT-EX-B-001   External services, BESS Module
+  ARC-PLT-BG-AC-001       BESS-Grid, AC-coupled
+  ARC-PLT-BG-DC-2-001     BESS-Grid, DC-coupled, 2-String
+  ARC-PLT-BG-DC-4-001     BESS-Grid, DC-coupled, 4-String
+  ARC-PLT-BG-DC-8-001     BESS-Grid, DC-coupled, 8-String
+  ARC-PLT-CG-001          Compute-Grid
+  ARC-PLT-CD-001          Compute-Drycooler         [OPEN: QD port size]
+  ARC-PLT-EX-G-001        External site services, Grid Container
+  ARC-PLT-EX-C-001        External site services, Compute Container
 
 Defense variants append `-D`:
-  ARC-PLT-BG4-001-D
+  ARC-PLT-BG-DC-4-001-D
 ```
 
 ## Toolchain
@@ -113,8 +119,9 @@ uv run poe sim                # IP rating verification fixtures
 
 | # | Parameter | Impact |
 |---|---|---|
-| 1 | GPU vendor DLC loop architecture | CT plate QD port size and count |
-| 2 | Off-grid inverter location | CB variant applicability |
+| 1 | GPU vendor DLC loop architecture | CD plate QD port size and count |
+| 2 | Dry cooler pipe connection size | CD plate flange size |
 | 3 | 4,160V AC option | CG conduit sizing changes significantly at MV |
-| 4 | Dry cooler pipe connection size | EX-T plate flange size |
-| 5 | MV grid cable entry | EX-G plate penetration sizing |
+| 4 | MV grid cable entry | EX-G plate penetration sizing |
+| 5 | BESS DC string voltage class (1500V vs 800V) | BG-DC isolation distance + bus rating |
+| 6 | BESS AC interconnect voltage (480V vs MV) | BG-AC conduit + bushing class |
