@@ -14,6 +14,8 @@ import cadquery as cq
 import yaml
 from pydantic import BaseModel
 
+from cad.model.engraving import engrave_logo
+
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 SPEC_PATH: Final[Path] = REPO_ROOT / "cad" / "specs" / "CG" / "spec.yaml"
 DEFAULT_OUTPUT: Final[Path] = REPO_ROOT / "cad" / "CG.step"
@@ -152,6 +154,16 @@ def build_cg_plate(params: CGBuildParams, spec: CGSpec | None = None) -> cq.Work
 
     # Mounting bolt holes
     plate = _cut_mounting_bolts(plate, spec.mounting_bolts, long_dim, wide_dim)
+
+    # Reason: ARCNODE logo engraved on the OUTWARD-facing plate face. Build pose
+    # has +Z up; the assembly composer rotates the plate so its -Z face points
+    # outward toward the mating container, so engrave that face. Mirror is handled
+    # inside engrave_logo so the logo reads correctly from outside.
+    plate = engrave_logo(
+        plate,
+        face_z_mm=-thickness / 2,
+        outward_normal_z=-1,
+    )
 
     return plate
 
