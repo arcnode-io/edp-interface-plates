@@ -7,7 +7,7 @@ import pytest
 from cad.model.cg import (
     V1_COMMERCIAL_PARAMS,
     build_cg_plate,
-    load_spec,
+    load_cg_spec as load_spec,
 )
 
 

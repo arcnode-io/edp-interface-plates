@@ -57,7 +57,9 @@ def _load_subpath_points(
         for i in range(SAMPLES_PER_SUBPATH + 1):
             p = sub.point(i / SAMPLES_PER_SUBPATH)
             x = (p.real - cx) * scale
-            y = -(p.imag - cy) * scale  # Reason: SVG y is down-positive; flip to cq up-positive.
+            y = (
+                -(p.imag - cy) * scale
+            )  # Reason: SVG y is down-positive; flip to cq up-positive.
             pts.append((x, y))
         if pts[0] != pts[-1]:
             pts.append(pts[0])

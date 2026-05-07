@@ -70,7 +70,7 @@ def test_engrave_logo_does_not_pierce_through() -> None:
     plate = _test_plate()
     engraved = engrave_logo(plate, face_z_mm=PLATE_THK_MM / 2, depth_mm=0.5)
     v_removed = plate.val().Volume() - engraved.val().Volume()
-    # Sanity bound: removed volume cannot exceed depth × bbox-of-logo (~width × height × depth).
+    # Sanity bound: removed volume cannot exceed depth x bbox-of-logo (~width x height x depth).
     upper_bound_mm3 = LOGO_DEFAULT_WIDTH_MM * LOGO_DEFAULT_WIDTH_MM * 0.5
     assert v_removed > 0.0
     assert v_removed < upper_bound_mm3

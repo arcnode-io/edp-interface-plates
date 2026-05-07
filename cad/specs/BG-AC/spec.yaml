@@ -1,0 +1,134 @@
+plate_id: BG-AC
+schema_version: "0"
+description: "Interface Plate, BESS-to-Grid AC-coupled"
+
+# BG-AC mounts on grid container's BESS-facing end wall (-X side per ADR-007
+# convention; mirror of CG plate which is on the compute-facing end). Connects
+# external customer BESS pad cable trench to grid container internal AC bus
+# via switchgear. Used when BESS lands AC at grid (Tesla Megapack, Megablock,
+# CATL EnerOne with integrated PCS).
+mating_pair:
+  side_a: bess_pad
+  side_b: grid_container
+
+outer_dims_mm:
+  L: 840   # vertical extent on container end wall (matches CG)
+  W: 640   # horizontal extent (matches CG)
+
+# Shared deployment_contexts table — toggle as a SET. Identical material/
+# fastener/finish to CG; only varies if BESS-specific seal requirements
+# emerge (none known v1).
+deployment_contexts:
+  commercial:
+    material: "6061-T6 aluminum (ASTM B209)"
+    finish: "Type II anodize 15-25 μm (MIL-A-8625)"
+    thickness_mm: 6
+    ip_rating: IP55
+    fasteners: "Zn-plated steel M10 (ASTM F593 G1)"
+    secondary_seal: null
+    ground_stud: M12   # Reason: BESS fault current >> compute load; M12 minimum
+  defense_forward:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+  sovereign_government:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+
+# Penetration positions are constants of the BG-AC variant design.
+# 2x parallel AC feeders (BESS interconnects via paired conductors at
+# megawatt scale), 1x data conduit, 1x ground stud.
+# Cutout DIAMETERS driven by build-time params (sizing engine output).
+penetration_schedule:
+  - id: power_conduit_left
+    x_mm: -150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: rigid steel conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Left AC feeder. v1 commercial sized for Tesla Megapack 1MW @ 480V
+      = ~1200A peak, split between two parallel conductors -> 600A each
+      -> ~3.5" rigid conduit hub OD ~100mm.
+  - id: power_conduit_right
+    x_mm: 150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: rigid steel conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: Right AC feeder, parallel to left for redundancy + ampacity split.
+  - id: data_conduit
+    x_mm: 0
+    y_mm: -50
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      BESS BMS comms (Modbus TCP per Tesla Powerhub or DNP3 per CATL).
+      v1 sized for fiber + copper bundle in 1¼" EMT -> ~35mm OD.
+  - id: ground_stud
+    x_mm: -200
+    y_mm: -300
+    size_driver: context.ground_stud
+    fitting_spec: tapped, sealed with conductive gasket
+    ots_pn: N/A (machined into plate)
+    notes: |
+      M12 ground stud (vs CG's M10) — sized for BESS fault current path.
+      Located near plate corner for access to grounding bus along
+      container floor.
+
+# Same 8-bolt perimeter pattern as CG — receiver frame on container end
+# wall is identical across plate variants for fab simplicity.
+mounting_bolts:
+  count: 8
+  inset_mm: 60
+  diameter_mm: 11   # M10 clearance hole
+  pattern: corners_and_edge_midpoints
+
+provenance:
+  authored_by: human
+  authored_date: 2026-05-07
+  reviewed_by: TBD_pending_human_review
+  reviewed_date: null
+  confidence_flags:
+    - field: penetration_schedule[*].ots_pn
+      flag: missing
+      note: Conduit hub vendor selection pending procurement engagement.
+    - field: penetration_schedule.power_conduit_*.size_driver
+      flag: assumed_default
+      note: |
+        v1 sizing assumes Tesla Megapack 2 XL: 1MW / 480V / 1200A peak,
+        2 parallel feeders @ 600A each. Real sizing comes from edp-api
+        Module F per ADR-011, taking actual BESS spec as input. v1
+        commercial value: power_conduit_od_mm = 100.
+
+notes: |
+  BG-AC is required for any commercial_ac/federal_ac/dod_ac profile —
+  the AC-coupled BESS interconnect path. Not used for DC-coupled
+  profiles (those route via PCS in grid container, exposing BG-DC
+  variant instead).
+
+  Penetration layout convention (face view, looking at plate from BESS
+  pad side, with container floor at bottom):
+
+       +Y (container ceiling)
+        ▲
+        │       ┌─────────────────────┐ +320
+        │       │                     │
+        │       │  ◯ pwrL    ◯ pwrR   │
+        │       │                     │
+        │       │       ◯ data        │
+        │       │ ●                   │ -320
+        │       └─────────────────────┘
+        │     -420  ground          +420
+        └────────────────────────────▶ +X
+                                       (horizontal)
