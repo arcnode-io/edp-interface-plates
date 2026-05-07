@@ -1,0 +1,132 @@
+plate_id: CG
+schema_version: "0"
+description: "Interface Plate, Compute-to-Grid"
+
+# CG mates compute-container ↔ grid-container via flexible assembly.
+# Both sides carry the same penetration layout (mirrored).
+mating_pair:
+  side_a: compute_container
+  side_b: grid_container
+
+# Origin = face center. L vertical (along container height), W horizontal.
+# Valid penetration X ∈ [-320, +320], Y ∈ [-420, +420].
+outer_dims_mm:
+  L: 840   # vertical extent on container end wall
+  W: 640   # horizontal extent
+
+# Material/finish/IP/fasteners toggle as a SET per deployment_context.
+# Outer dims and bolt pattern are constant; only thickness and material vary.
+deployment_contexts:
+  commercial:
+    material: "6061-T6 aluminum (ASTM B209)"
+    finish: "Type II anodize 15-25 μm (MIL-A-8625)"
+    thickness_mm: 6
+    ip_rating: IP55
+    fasteners: "Zn-plated steel M10 (ASTM F593 G1)"
+    secondary_seal: null
+    ground_stud: M10
+  defense_forward:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+  sovereign_government:
+    # Same as defense_forward; placeholder for export-controlled variants.
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+
+# Penetration positions are constants of the CG variant design.
+# Cutout DIAMETERS are driven by build-time params (sizing engine output).
+# size_driver references either a build param or a deployment-context field.
+penetration_schedule:
+  - id: power_conduit
+    x_mm: 0
+    y_mm: 300
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: rigid steel conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Single AC feeder for v1 commercial (415Y/240V). Ø sized from
+      sizing engine Module F per ADR-011; v1 commercial = ~73mm
+      (2.5″ rigid conduit hub OD).
+  - id: data_conduit
+    x_mm: 0
+    y_mm: 0
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Data conduit count = data_conduit_count param. v1 commercial = 1
+      (single fiber + copper bundle). Defense or multi-fabric deployments
+      use 2+; positions then derived from data_conduit_count.
+  - id: ground_stud
+    x_mm: -200
+    y_mm: -300
+    size_driver: context.ground_stud
+    fitting_spec: tapped, sealed with conductive gasket
+    ots_pn: N/A (machined into plate)
+    notes: |
+      Single equipment ground stud. Size from deployment_context
+      (M10 commercial / M12 defense). Located near plate corner for
+      access to rack grounding bus along container floor.
+
+# Mounting bolt pattern is fixed across all CG variants — drives receiver
+# frame geometry on container end wall. 8 bolts: 4 corners + 4 edge midpoints,
+# 60mm inset from plate edges. Sufficient for IP55 face seal at this plate
+# size; defense IP65 keeps same pattern, EPDM secondary seal handles delta.
+mounting_bolts:
+  count: 8
+  inset_mm: 60
+  diameter_mm: 11   # M10 clearance hole
+  pattern: corners_and_edge_midpoints
+
+provenance:
+  authored_by: human
+  authored_date: 2026-05-06
+  reviewed_by: TBD_pending_human_review
+  reviewed_date: null
+  confidence_flags:
+    - field: penetration_schedule[*].ots_pn
+      flag: missing
+      note: Conduit hub vendor selection pending procurement engagement.
+    - field: penetration_schedule.power_conduit.x_mm
+      flag: assumed_default
+      note: |
+        v1 layout — power top, data center, ground bottom-left corner.
+        Layout owned by this file; revisit if mating frame on grid
+        container constrains otherwise.
+
+notes: |
+  CG plate is the always-present plate on every ARCNODE deployment per
+  ADR-003 (two-container product). One plate on each container's mating
+  end wall; pair connected via flexible assembly absorbing ±25mm horiz
+  and ±10mm vert misalignment.
+
+  Penetration layout convention (face view, looking at plate from the
+  flexible-assembly side, with container floor at bottom):
+
+       +Y  (up, container ceiling direction)
+        ▲
+        │
+        │         ┌─────────────┐ +320
+        │         │  ◯ power    │
+        │         │             │
+        │         │  ◯ data     │
+        │         │             │
+        │         │ ●           │ -320
+        │         └─────────────┘
+        │       -420  ground  +420
+        └────────────────────────▶ +X
+                                  (horizontal across wall)
+
+  Penetration positions are the design contract between this spec and
+  the cadquery model in cad/model/cg.py. Positions hardcoded in the
+  spec; sizes parametric per ADR-011.
