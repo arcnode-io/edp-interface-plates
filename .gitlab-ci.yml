@@ -5,12 +5,9 @@ stages:
 checks:
   stage: check
   script:
-    - mkdir -p sim/results
     - uv run poe checks
-    - uv run poe notebook
     - uv run poe build
-    - uv run pytest --junitxml=junit.xml
-    - uv run poe cover
+    - uv run pytest --junitxml=junit.xml --cov=cad cad/
     - uv run coverage xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:

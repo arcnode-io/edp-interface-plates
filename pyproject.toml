@@ -32,19 +32,18 @@ dev = [
 format = "black ."
 lint = "ruff check"
 checks = ["format", "lint"]
-notebook = "jupyter nbconvert --execute --inplace theory.ipynb"
-build = { cmd = "python cad/model/model.py", env = { PYTHONPATH = "." } }
-inspect-model = "bash -c 'nohup freecad cad/l_bracket.step &>/dev/null &'"
-inspect-asm = "bash -c 'PYTHONPATH=. python cad/model/assembly.py && nohup freecad cad/l_bracket_assy.step &>/dev/null &'"
-generate-model = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_drawing.py'"
+notebook-cg = "jupyter nbconvert --execute --inplace cad/specs/CG/theory.ipynb"
+notebook-bg-ac = "jupyter nbconvert --execute --inplace cad/specs/BG-AC/theory.ipynb"
+build-cg = { cmd = "python cad/model/cg.py", env = { PYTHONPATH = "." } }
+build-bg-ac = { cmd = "python cad/model/bg_ac.py", env = { PYTHONPATH = "." } }
+build = ["build-cg", "build-bg-ac"]
+inspect-cg = "bash -c 'nohup freecad cad/CG.step &>/dev/null &'"
+inspect-bg-ac = "bash -c 'nohup freecad cad/BG-AC.step &>/dev/null &'"
 generate-plate-cg = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CG'"
 generate-plate-bg-ac = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-AC'"
-generate-asm = { cmd = "bash -c 'mkdir -p output/fab && python cad/model/assembly.py && cp cad/l_bracket.step output/fab/ && cp cad/l_bracket_assy.step output/fab/ && echo \"Copied STEP + assembly to output/fab/\"'", env = { PYTHONPATH = "." } }
-validate-model = { cmd = "python cad/model/validate_model.py", env = { PYTHONPATH = "." } }
-validate-asm = { cmd = "python cad/model/validate_asm.py", env = { PYTHONPATH = "." } }
 healthcheck = "bash -c 'for tool in freecad ccx gmsh rsvg-convert; do command -v $tool >/dev/null || { echo \"MISSING: $tool\"; exit 1; }; done && echo TOOLS_READY'"
-sim = "pytest -vv sim/"
-cover = "pytest -vv --cov sim/"
+test = "pytest -vv cad/"
+cover = "pytest -vv --cov=cad cad/"
 review = "claude 'run code-reviewer agent against diff for quality and elegance'"
 commit = "bash -c 'uv run poe checks && uv run poe cover && uv run poe review && git add -A && git cz && git push'"
 
