@@ -32,8 +32,7 @@ dev = [
 format = "black ."
 lint = "ruff check"
 checks = ["format", "lint"]
-notebook-cg = "jupyter nbconvert --execute --inplace cad/specs/CG/theory.ipynb"
-notebook-bg-ac = "jupyter nbconvert --execute --inplace cad/specs/BG-AC/theory.ipynb"
+notebook = { cmd = "jupyter nbconvert --execute --inplace theory.ipynb", env = { PYTHONPATH = "." } }
 build-cg = { cmd = "python cad/model/cg.py", env = { PYTHONPATH = "." } }
 build-bg-ac = { cmd = "python cad/model/bg_ac.py", env = { PYTHONPATH = "." } }
 build = ["build-cg", "build-bg-ac"]
@@ -42,8 +41,9 @@ inspect-bg-ac = "bash -c 'nohup freecad cad/BG-AC.step &>/dev/null &'"
 generate-plate-cg = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CG'"
 generate-plate-bg-ac = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-AC'"
 healthcheck = "bash -c 'for tool in freecad ccx gmsh rsvg-convert; do command -v $tool >/dev/null || { echo \"MISSING: $tool\"; exit 1; }; done && echo TOOLS_READY'"
-test = "pytest -vv cad/"
-cover = "pytest -vv --cov=cad cad/"
+sim = { cmd = "pytest -vv sim/", env = { PYTHONPATH = "." } }
+test = { cmd = "pytest -vv cad/ sim/", env = { PYTHONPATH = "." } }
+cover = { cmd = "pytest -vv --cov=cad --cov=sim cad/ sim/", env = { PYTHONPATH = "." } }
 review = "claude 'run code-reviewer agent against diff for quality and elegance'"
 commit = "bash -c 'uv run poe checks && uv run poe cover && uv run poe review && git add -A && git cz && git push'"
 

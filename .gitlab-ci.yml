@@ -7,7 +7,8 @@ checks:
   script:
     - uv run poe checks
     - uv run poe build
-    - uv run pytest --junitxml=junit.xml --cov=cad cad/
+    - uv run poe notebook
+    - PYTHONPATH=. uv run pytest --junitxml=junit.xml --cov=cad --cov=sim cad/ sim/
     - uv run coverage xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
