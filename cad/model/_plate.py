@@ -1,8 +1,8 @@
-"""Generic parametric plate model — shared across CG, BG-AC, EX-* variants.
+"""Generic parametric plate model — shared across all plate variants.
 
 Each plate variant has its own `cad/specs/{plate_id}/spec.yaml` (same schema)
-and a slim wrapper module under `cad/model/{plate_id_lower}.py` that supplies
-the spec path + per-variant build params.
+including a `default_params:` block. The single dispatcher in
+`cad/model/build.py` loads the spec, resolves params, and builds the plate.
 """
 
 from dataclasses import dataclass
@@ -65,6 +65,16 @@ class MountingBolts(BaseModel):
     pattern: str
 
 
+class DefaultParams(BaseModel):
+    """v1 build params — pinned in spec.yaml as design contract."""
+
+    power_conduit_od_mm: float
+    data_conduit_od_mm: float
+    data_conduit_count: int
+    deployment_context: str
+    revision: str
+
+
 class PlateSpec(BaseModel):
     """Top-level plate spec — drives model + drawing + BOM generators."""
 
@@ -74,6 +84,7 @@ class PlateSpec(BaseModel):
     deployment_contexts: dict[str, DeploymentContextSpec]
     penetration_schedule: list[Penetration]
     mounting_bolts: MountingBolts
+    default_params: DefaultParams
 
     model_config = {"extra": "ignore"}
 
@@ -92,6 +103,18 @@ class PlateBuildParams:
 def load_spec(spec_path: Path) -> PlateSpec:
     """Load + validate a plate spec.yaml at the given path."""
     return PlateSpec.model_validate(yaml.safe_load(spec_path.read_text()))
+
+
+def default_params_for(spec: PlateSpec) -> PlateBuildParams:
+    """Build PlateBuildParams from spec's default_params block."""
+    dp = spec.default_params
+    return PlateBuildParams(
+        power_conduit_od_mm=dp.power_conduit_od_mm,
+        data_conduit_od_mm=dp.data_conduit_od_mm,
+        data_conduit_count=dp.data_conduit_count,
+        deployment_context=dp.deployment_context,  # type: ignore[arg-type]
+        revision=dp.revision,
+    )
 
 
 def build_plate(params: PlateBuildParams, spec: PlateSpec) -> cq.Workplane:

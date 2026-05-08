@@ -33,19 +33,20 @@ format = "black ."
 lint = "ruff check"
 checks = ["format", "lint"]
 notebook = { cmd = "jupyter nbconvert --execute --inplace theory.ipynb", env = { PYTHONPATH = "." } }
-build-cg = { cmd = "python cad/model/cg.py", env = { PYTHONPATH = "." } }
-build-bg-ac = { cmd = "python cad/model/bg_ac.py", env = { PYTHONPATH = "." } }
-build-ex-g = { cmd = "python cad/model/ex_g.py", env = { PYTHONPATH = "." } }
-build-ex-c = { cmd = "python cad/model/ex_c.py", env = { PYTHONPATH = "." } }
-build = ["build-cg", "build-bg-ac", "build-ex-g", "build-ex-c"]
+build = { cmd = "python cad/model/build.py --all", env = { PYTHONPATH = "." } }
+build-cg = { cmd = "python cad/model/build.py --plate-id CG", env = { PYTHONPATH = "." } }
+build-bg-ac = { cmd = "python cad/model/build.py --plate-id BG-AC", env = { PYTHONPATH = "." } }
+build-bg-dc = { cmd = "python cad/model/build.py --plate-id BG-DC", env = { PYTHONPATH = "." } }
+build-cd = { cmd = "python cad/model/build.py --plate-id CD", env = { PYTHONPATH = "." } }
+draw = { cmd = "python cad/drawing/build.py --all", env = { PYTHONPATH = "." } }
 inspect-cg = "bash -c 'nohup freecad cad/specs/CG/plate.step &>/dev/null &'"
 inspect-bg-ac = "bash -c 'nohup freecad cad/specs/BG-AC/plate.step &>/dev/null &'"
-inspect-ex-g = "bash -c 'nohup freecad cad/specs/EX-G/plate.step &>/dev/null &'"
-inspect-ex-c = "bash -c 'nohup freecad cad/specs/EX-C/plate.step &>/dev/null &'"
+inspect-bg-dc = "bash -c 'nohup freecad cad/specs/BG-DC/plate.step &>/dev/null &'"
+inspect-cd = "bash -c 'nohup freecad cad/specs/CD/plate.step &>/dev/null &'"
 generate-plate-cg = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CG'"
 generate-plate-bg-ac = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-AC'"
-generate-plate-ex-g = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id EX-G'"
-generate-plate-ex-c = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id EX-C'"
+generate-plate-bg-dc = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-DC'"
+generate-plate-cd = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CD'"
 healthcheck = "bash -c 'for tool in freecad ccx gmsh rsvg-convert; do command -v $tool >/dev/null || { echo \"MISSING: $tool\"; exit 1; }; done && echo TOOLS_READY'"
 sim = { cmd = "pytest -vv sim/", env = { PYTHONPATH = "." } }
 test = { cmd = "pytest -vv cad/ sim/", env = { PYTHONPATH = "." } }

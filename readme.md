@@ -43,9 +43,7 @@ Variant codes follow `[Container A][Container B]-[Coupling]-[String/Port Count]`
 | **BG-AC** | External BESS lands AC at grid container (Tesla Megapack, Tesla Megablock, CATL EnerOne with integrated PCS) | AC feeder, grounding, data | `BG-AC` (conduit sized from BESS AC interconnect spec) |
 | **BG-DC** | External BESS lands DC at grid container; PCS lives in grid container (CATL EnerOne, external PCS) | DC bus, grounding, data | `BG-DC-2`, `BG-DC-4`, `BG-DC-8` (per BESS string count) |
 | **CG** | All deployments | AC feeder (415Y/240V) + data | `CG` (fixed, conduit sized from sizing engine Module F) |
-| **CD** | All deployments (1:1 Compute:Drycooler) | Coolant supply/return + drycooler comms (VFD Modbus, fan tach, leak sensor) | `CD` (QD port size [OPEN] pending GPU vendor DLC spec) |
-| **EX-G** | All deployments | External site services on Grid Container long wall | `EX-G` |
-| **EX-C** | All deployments | External site services on Compute Container long wall | `EX-C` |
+| **CD** | All deployments (1:1 Compute:Drycooler) | Coolant supply/return + drycooler comms (VFD Modbus, fan tach, leak sensor) | `CD` (2" QD class, 200 LPM @ 5 K secondary loop ΔT) |
 
 See the spec doc for full penetration schedules per variant.
 
@@ -91,9 +89,7 @@ Examples:
   ARC-PLT-BG-DC-4-001     BESS-Grid, DC-coupled, 4-String
   ARC-PLT-BG-DC-8-001     BESS-Grid, DC-coupled, 8-String
   ARC-PLT-CG-001          Compute-Grid
-  ARC-PLT-CD-001          Compute-Drycooler         [OPEN: QD port size]
-  ARC-PLT-EX-G-001        External site services, Grid Container
-  ARC-PLT-EX-C-001        External site services, Compute Container
+  ARC-PLT-CD-001          Compute-Drycooler
 
 Defense variants append `-D`:
   ARC-PLT-BG-DC-4-001-D
@@ -122,6 +118,5 @@ uv run poe sim                # IP rating verification fixtures
 | 1 | GPU vendor DLC loop architecture | CD plate QD port size and count |
 | 2 | Dry cooler pipe connection size | CD plate flange size |
 | 3 | 4,160V AC option | CG conduit sizing changes significantly at MV |
-| 4 | MV grid cable entry | EX-G plate penetration sizing |
-| 5 | BESS DC string voltage class (1500V vs 800V) | BG-DC isolation distance + bus rating |
-| 6 | BESS AC interconnect voltage (480V vs MV) | BG-AC conduit + bushing class |
+| 4 | BESS DC string voltage class (1500V vs 800V) | BG-DC isolation distance + bus rating |
+| 5 | BESS AC interconnect voltage (480V vs MV) | BG-AC conduit + bushing class |

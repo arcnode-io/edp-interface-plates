@@ -78,6 +78,17 @@ penetration_schedule:
       (M10 commercial / M12 defense). Located near plate corner for
       access to rack grounding bus along container floor.
 
+# v1 commercial build params (sizing engine Module F output).
+# 7x HGX nodes @ 10.5 kW + ~7 kW overhead = ~80 kW at 415Y/240V 3ph
+# → ~111A → 2.5" rigid conduit hub OD ~73mm. Single fiber+copper bundle
+# in 1¼" EMT → ~35mm OD. Future revisions override via CLI.
+default_params:
+  power_conduit_od_mm: 73.0
+  data_conduit_od_mm: 35.0
+  data_conduit_count: 1
+  deployment_context: commercial
+  revision: "001"
+
 # Mounting bolt pattern is fixed across all CG variants — drives receiver
 # frame geometry on container end wall. 8 bolts: 4 corners + 4 edge midpoints,
 # 60mm inset from plate edges. Sufficient for IP55 face seal at this plate
@@ -128,5 +139,5 @@ notes: |
                                   (horizontal across wall)
 
   Penetration positions are the design contract between this spec and
-  the cadquery model in cad/model/cg.py. Positions hardcoded in the
-  spec; sizes parametric per ADR-011.
+  the cadquery dispatcher in cad/model/build.py. Positions hardcoded
+  in the spec; sizes parametric per ADR-011.

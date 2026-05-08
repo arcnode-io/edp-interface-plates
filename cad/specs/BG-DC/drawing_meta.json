@@ -1,6 +1,6 @@
 {
-  "part_number": "ARC-PLT-EX-G-001",
-  "description": "Interface Plate, External Services, Grid Container",
+  "part_number": "ARC-PLT-BG-DC-001",
+  "description": "Interface Plate, BESS-to-Grid DC-coupled (external PCS)",
   "revision": "001",
   "deployment_context": "commercial",
   "material": "6061-T6 aluminum (ASTM B209)",
@@ -15,7 +15,7 @@
   },
   "general_tolerance": "ISO 2768-m",
   "build_params": {
-    "power_conduit_od_mm": 28.0,
+    "power_conduit_od_mm": 85.0,
     "data_conduit_od_mm": 35.0,
     "data_conduit_count": 1
   },

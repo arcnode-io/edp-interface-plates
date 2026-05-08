@@ -86,6 +86,16 @@ penetration_schedule:
       Located near plate corner for access to grounding bus along
       container floor.
 
+# v1 commercial build params (sizing engine Module F output).
+# Tesla Megapack 2 XL: 1 MW @ 480V = 1200A peak, split across 2 parallel
+# feeders @ 600A each → ~3.5" rigid conduit hub OD ~100mm.
+default_params:
+  power_conduit_od_mm: 100.0
+  data_conduit_od_mm: 35.0
+  data_conduit_count: 1
+  deployment_context: commercial
+  revision: "001"
+
 # Same 8-bolt perimeter pattern as CG — receiver frame on container end
 # wall is identical across plate variants for fab simplicity.
 mounting_bolts:

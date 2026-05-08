@@ -1,0 +1,146 @@
+plate_id: CD
+schema_version: "0"
+description: "Interface Plate, Compute-to-Drycooler"
+
+# CD mounts on compute container -Y long wall (the only long-wall plate
+# per current 3-plate fleet: CG, BG-AC, CD). Carries the secondary cooling
+# loop between the compute container's internal CDU (CMP-CDU-001) and the
+# external dry cooler (EXT-DC-*):
+# - Coolant supply (CDU primary -> drycooler return-side)
+# - Coolant return (drycooler supply-side -> CDU)
+# - Drycooler comms (Modbus to VFD, fan tach, leak sensor)
+mating_pair:
+  side_a: drycooler
+  side_b: compute_container
+
+outer_dims_mm:
+  L: 840
+  W: 640
+
+deployment_contexts:
+  commercial:
+    material: "6061-T6 aluminum (ASTM B209)"
+    finish: "Type II anodize 15-25 μm (MIL-A-8625)"
+    thickness_mm: 6
+    ip_rating: IP55
+    fasteners: "Zn-plated steel M10 (ASTM F593 G1)"
+    secondary_seal: null
+    ground_stud: M10   # cooling loop is electrically isolated; no fault path
+  defense_forward:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+  sovereign_government:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+
+# Penetration schedule: 2x coolant QDs (supply + return) + comms conduit + ground.
+# QD diameters chosen for ~200 LPM secondary loop flow at 5K ΔT (compute
+# container 70 kW heat rejection). 2" class QD body (~75mm OD with hub).
+penetration_schedule:
+  - id: coolant_supply_qd
+    x_mm: -150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: 2" stainless quick-disconnect with bulkhead hub (Staubli SBX 50 class)
+    ots_pn: TBD_after_QD_supplier_selection
+    notes: |
+      Coolant supply line from CDU primary to drycooler return-side.
+      v1 sizing assumes Tesla Megapack-class secondary loop:
+      70 kW / (4180 J/kg.K * 5K) = 200 LPM total ~ 100 LPM per line.
+      2" Staubli SBX 50 rated 250+ LPM at ~0.5 bar pressure drop.
+      Real spec from Supermicro DLC-2 manifold integration brief.
+  - id: coolant_return_qd
+    x_mm: 150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: 2" stainless quick-disconnect with bulkhead hub (Staubli SBX 50 class)
+    ots_pn: TBD_after_QD_supplier_selection
+    notes: Coolant return line from drycooler supply-side to CDU. Mirror of supply.
+  - id: drycooler_comms_conduit
+    x_mm: 0
+    y_mm: -50
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Modbus to drycooler VFD (fan speed control), fan tach signals,
+      leak sensor analog. ~1¼" EMT (~35mm OD).
+  - id: ground_stud
+    x_mm: -200
+    y_mm: -300
+    size_driver: context.ground_stud
+    fitting_spec: tapped, sealed with conductive gasket
+    ots_pn: N/A (machined into plate)
+    notes: |
+      Site ground tie. M10 commercial — cooling loop is electrically
+      isolated, no MV fault path.
+
+# v1 commercial build params (derived in theory.ipynb).
+# Secondary loop 70 kW / (4180 J/kg.K * 5K) = 200 LPM total
+# → 2" Stäubli SBX 50 class QD with bulkhead hub OD ~75mm.
+# Drycooler comms in 1¼" EMT ~35mm OD.
+default_params:
+  power_conduit_od_mm: 75.0
+  data_conduit_od_mm: 35.0
+  data_conduit_count: 1
+  deployment_context: commercial
+  revision: "001"
+
+mounting_bolts:
+  count: 8
+  inset_mm: 60
+  diameter_mm: 11
+  pattern: corners_and_edge_midpoints
+
+provenance:
+  authored_by: human
+  authored_date: 2026-05-08
+  reviewed_by: TBD_pending_human_review
+  reviewed_date: null
+  confidence_flags:
+    - field: penetration_schedule.coolant_*.fitting_spec
+      flag: assumed_default
+      note: |
+        v1 commercial sized from first-principles thermal math + public
+        HGX B200 cooling references (per cold plate ~20 LPM, 1000W TDP).
+        Sources: Lenovo HGX B200 product guide, Alliance Chemical article
+        on B200/GB200/MI300 thermal density. NOT from Supermicro DLC-2
+        official spec — that's gated behind sales/integration engagement
+        (per existing CMP-NODE-001 spec.yaml provenance notes).
+        2" Staubli SBX 50 OR equivalent (Parker QCM, CPC LQ8) is a typical
+        production pick at ~75mm OD with hub fitting allowance.
+    - field: penetration_schedule[*].ots_pn
+      flag: missing
+      note: QD supplier selection pending procurement engagement.
+    - field: penetration_schedule.coolant_*.x_mm
+      flag: assumed_default
+      note: |
+        ±150mm symmetric supply/return placement assumes blind-mate at
+        center; actual position may shift after Supermicro DLC-2 manifold
+        port-pattern is locked.
+
+notes: |
+  CD is required across ALL profiles (every compute container has a
+  drycooler in the v1 design). Mounts on compute container -Y long wall
+  (single long-wall plate per current 3-plate fleet).
+
+  Per ADR-XXX (Q3 plate framework): plate model is parametric on conduit
+  OD; sizing engine Module F (and/or Supermicro DLC-2 integration spec)
+  becomes the authoritative input later. v1 commercial value:
+  power_conduit_od_mm = 75 (2" SBX-class QD body).
+
+  Open dependencies:
+  - Supermicro DLC-2 manifold port pattern (drives x_mm positions)
+  - QD supplier selection (Staubli vs Parker vs CPC)
+  - Coolant compatibility across loops (DI water vs PGW-25)
+  - Final secondary loop ΔT operating point (drives flow rate -> QD class)

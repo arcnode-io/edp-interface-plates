@@ -1,0 +1,155 @@
+plate_id: BG-DC
+schema_version: "0"
+description: "Interface Plate, BESS-to-Grid DC-coupled (external PCS)"
+
+# BG-DC mounts on grid container's BESS-facing end wall (+X side per ADR-007
+# convention; mirror of CG plate which is on the compute-facing -X end).
+# Used for commercial_dc_ext profile: PCS lives INSIDE grid container, BESS
+# pad outputs DC strings directly. BG-DC carries DC bus from BESS to grid
+# container's PCS input (e.g. CATL EnerOne with external PCS, NHOA Atlante
+# DC-string deployments).
+mating_pair:
+  side_a: bess_dc_string
+  side_b: grid_container
+
+outer_dims_mm:
+  L: 840   # vertical extent on container end wall (matches BG-AC)
+  W: 640   # horizontal extent (matches BG-AC)
+
+# Same deployment_contexts framework as BG-AC. Material/finish/IP toggle
+# as a SET; only ground stud size and ampacity-driven cutout sizes differ.
+deployment_contexts:
+  commercial:
+    material: "6061-T6 aluminum (ASTM B209)"
+    finish: "Type II anodize 15-25 μm (MIL-A-8625)"
+    thickness_mm: 6
+    ip_rating: IP55
+    fasteners: "Zn-plated steel M10 (ASTM F593 G1)"
+    secondary_seal: null
+    ground_stud: M12   # Reason: DC fault is sustained — M12 minimum
+  defense_forward:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+  sovereign_government:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+
+# Penetration schedule: DC+ bus + DC- bus + 1x data + 1x ground stud.
+# Same position geometry as BG-AC (2 power + data + ground) so the same
+# receiver-frame welding fixture works across BG-* plate variants.
+# Cutout DIAMETERS driven by build-time params (sizing engine output).
+penetration_schedule:
+  - id: dc_bus_positive
+    x_mm: -150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: DC bus duct hub, threaded with isolation bushing
+    ots_pn: TBD_after_DC_busway_supplier_selection
+    notes: |
+      DC+ bus from BESS string array. v1 commercial sized for 4-string
+      aggregate at 1 MW / 1500V = ~667A → 3" DC bus duct hub OD ~85mm.
+      Real sizing comes from edp-api Module F per ADR-011, taking actual
+      BESS string voltage class (800V or 1500V) as input. Isolation
+      bushing required per IEC 61439-6 §11.6 (live-part separation).
+  - id: dc_bus_negative
+    x_mm: 150
+    y_mm: 200
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: DC bus duct hub, threaded with isolation bushing
+    ots_pn: TBD_after_DC_busway_supplier_selection
+    notes: |
+      DC- bus, paired with positive bus at min 300mm spacing for
+      arc-flash isolation per NFPA 70E Table 130.7(C)(15)(a). v1 commercial
+      uses 300mm separation (positions ±150mm from center).
+  - id: data_conduit
+    x_mm: 0
+    y_mm: -50
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      BESS BMS comms (Modbus TCP, CAN, or DNP3 per BESS vendor). v1 sized
+      for fiber + copper bundle in 1¼" EMT → ~35mm OD.
+  - id: ground_stud
+    x_mm: -200
+    y_mm: -300
+    size_driver: context.ground_stud
+    fitting_spec: tapped, sealed with conductive gasket
+    ots_pn: N/A (machined into plate)
+    notes: |
+      M12 ground stud — DC fault is sustained until contactor opens
+      (no zero crossing), so ground bonding must handle higher I²t.
+      Located near plate corner for access to grounding bus.
+
+# v1 commercial build params (sizing engine Module F output).
+# 4-string aggregate at 1 MW / 1500V DC = 667A → 3" DC bus duct hub OD ~85mm.
+# Future BG-DC-2 (2-string) and BG-DC-8 (8-string) variants override this.
+default_params:
+  power_conduit_od_mm: 85.0
+  data_conduit_od_mm: 35.0
+  data_conduit_count: 1
+  deployment_context: commercial
+  revision: "001"
+
+# Same 8-bolt perimeter pattern as BG-AC — receiver frame on grid container
+# +X end wall is identical across BG-* plate variants for fab simplicity.
+mounting_bolts:
+  count: 8
+  inset_mm: 60
+  diameter_mm: 11
+  pattern: corners_and_edge_midpoints
+
+provenance:
+  authored_by: human
+  authored_date: 2026-05-08
+  reviewed_by: TBD_pending_human_review
+  reviewed_date: null
+  confidence_flags:
+    - field: penetration_schedule[*].ots_pn
+      flag: missing
+      note: DC busway supplier selection pending procurement engagement.
+    - field: penetration_schedule.dc_bus_*.size_driver
+      flag: assumed_default
+      note: |
+        v1 sizing assumes 4-string BESS at 1 MW aggregate, 1500V DC class,
+        667A nominal. Real sizing comes from edp-api Module F per ADR-011.
+        Future sub-variants BG-DC-2, BG-DC-4, BG-DC-8 may parametrize
+        on string count rather than aggregate; revisit after PM input.
+    - field: penetration_schedule.dc_bus_*.x_mm
+      flag: assumed_default
+      note: |
+        ±150mm separation between DC+ and DC- buses gives 300mm clearance,
+        which meets NFPA 70E arc-flash table for 1500V class. If string
+        voltage drops to 800V this can tighten to ~200mm separation.
+
+notes: |
+  BG-DC is the BESS interconnect plate for `commercial_dc_ext` profile —
+  external PCS lives in grid container, BESS pad outputs raw DC strings.
+  Not used for `commercial_ac` or `commercial_dc_int` (both of which see
+  AC at the grid container's BESS-facing wall and use BG-AC instead).
+
+  Penetration layout convention (face view, looking at plate from BESS
+  pad side, with container floor at bottom):
+
+       +Y (container ceiling)
+        ▲
+        │       ┌─────────────────────┐ +320
+        │       │                     │
+        │       │  ◯ DC+     ◯ DC-    │
+        │       │                     │
+        │       │       ◯ data        │
+        │       │ ●                   │ -320
+        │       └─────────────────────┘
+        │     -420  ground          +420
+        └────────────────────────────▶ +X
+                                       (horizontal)

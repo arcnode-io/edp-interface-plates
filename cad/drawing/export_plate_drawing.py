@@ -28,35 +28,8 @@ TEMPLATES_DIR = REPO_ROOT / "cad" / "model" / "templates"
 SPECS_DIR = REPO_ROOT / "cad" / "specs"
 DRAWINGS_DIR = REPO_ROOT / "output" / "drawings"
 
-# v1 build params hardcoded per plate — match cad/model/{plate}.py V1_COMMERCIAL_PARAMS.
-# These drive penetration diameter resolution. Future: pass via CLI or read from sidecar.
-_V1_PARAMS_BY_PLATE = {
-    "CG": {
-        "power_conduit_od_mm": 73.0,
-        "data_conduit_od_mm": 35.0,
-        "deployment_context": "commercial",
-        "revision": "001",
-    },
-    "BG-AC": {
-        "power_conduit_od_mm": 100.0,
-        "data_conduit_od_mm": 35.0,
-        "deployment_context": "commercial",
-        "revision": "001",
-    },
-    "EX-G": {
-        "power_conduit_od_mm": 28.0,  # station service LV
-        "data_conduit_od_mm": 35.0,  # SCADA fiber
-        "deployment_context": "commercial",
-        "revision": "001",
-    },
-    "EX-C": {
-        "power_conduit_od_mm": 35.0,  # OOB mgmt
-        "data_conduit_od_mm": 63.0,  # fiber uplink
-        "deployment_context": "commercial",
-        "revision": "001",
-    },
-}
-
+# Reason: v1 build params are read from spec.yaml's default_params block —
+# single source of truth for every plate. No more per-plate hardcoded dict.
 GROUND_STUD_TAP_DRILL_MM = {"M8": 6.8, "M10": 8.5, "M12": 10.2}
 
 
@@ -111,13 +84,14 @@ def export_plate_drawing(plate_id: str) -> Path:
         Path to emitted PDF.
     """
     spec = _load_plate_spec(plate_id)
-    params = _V1_PARAMS_BY_PLATE[plate_id]
+    params = spec["default_params"]
 
     DRAWINGS_DIR.mkdir(parents=True, exist_ok=True)
     step_path = REPO_ROOT / "cad" / "specs" / plate_id / "plate.step"
     if not step_path.exists():
         raise FileNotFoundError(
-            f"plate STEP not found at {step_path}; run cad/model/{plate_id.lower()}.py first"
+            f"plate STEP not found at {step_path}; "
+            f"run `python cad/model/build.py --plate-id {plate_id}` first"
         )
 
     template_path = TEMPLATES_DIR / "A3_Landscape_EWAI.svg"
