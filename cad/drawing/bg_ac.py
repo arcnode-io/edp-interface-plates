@@ -14,8 +14,8 @@ from cad.model.bg_ac import V1_COMMERCIAL_PARAMS, build_bg_ac_plate, load_bg_ac_
 logger = logging.getLogger(__name__)
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
-DEFAULT_DXF: Final[Path] = REPO_ROOT / "cad" / "BG-AC.dxf"
-DEFAULT_META: Final[Path] = REPO_ROOT / "cad" / "BG-AC_drawing_meta.json"
+DEFAULT_DXF: Final[Path] = REPO_ROOT / "cad" / "specs" / "BG-AC" / "plate.dxf"
+DEFAULT_META: Final[Path] = REPO_ROOT / "cad" / "specs" / "BG-AC" / "drawing_meta.json"
 
 
 def main() -> None:

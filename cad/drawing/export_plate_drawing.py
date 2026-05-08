@@ -102,7 +102,7 @@ def export_plate_drawing(plate_id: str) -> Path:
     params = _V1_PARAMS_BY_PLATE[plate_id]
 
     DRAWINGS_DIR.mkdir(parents=True, exist_ok=True)
-    step_path = REPO_ROOT / "cad" / f"{plate_id}.step"
+    step_path = REPO_ROOT / "cad" / "specs" / plate_id / "plate.step"
     if not step_path.exists():
         raise FileNotFoundError(
             f"plate STEP not found at {step_path}; run cad/model/{plate_id.lower()}.py first"

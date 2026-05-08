@@ -14,8 +14,8 @@ from cad.model.cg import V1_COMMERCIAL_PARAMS, build_cg_plate, load_cg_spec
 logger = logging.getLogger(__name__)
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
-DEFAULT_DXF: Final[Path] = REPO_ROOT / "cad" / "CG.dxf"
-DEFAULT_META: Final[Path] = REPO_ROOT / "cad" / "CG_drawing_meta.json"
+DEFAULT_DXF: Final[Path] = REPO_ROOT / "cad" / "specs" / "CG" / "plate.dxf"
+DEFAULT_META: Final[Path] = REPO_ROOT / "cad" / "specs" / "CG" / "drawing_meta.json"
 
 
 def main() -> None:

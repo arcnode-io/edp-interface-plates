@@ -14,7 +14,7 @@ from cad.model._plate import (
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 SPEC_PATH: Final[Path] = REPO_ROOT / "cad" / "specs" / "CG" / "spec.yaml"
-DEFAULT_OUTPUT: Final[Path] = REPO_ROOT / "cad" / "CG.step"
+DEFAULT_OUTPUT: Final[Path] = REPO_ROOT / "cad" / "specs" / "CG" / "plate.step"
 
 # Reason: v1 commercial — 7x HGX nodes @ 10.5 kW + ~7 kW overhead = ~80 kW
 # at 415Y/240V 3ph → ~111A → 2.5" rigid conduit hub OD ≈ 73mm.
@@ -43,7 +43,7 @@ def build_cg_plate(
 
 
 def main() -> None:
-    """CLI entry: build v1 commercial CG plate, export to cad/CG.step."""
+    """CLI entry: build v1 commercial CG plate, export to cad/specs/CG/plate.step."""
     plate = build_cg_plate(V1_COMMERCIAL_PARAMS)
     cq.exporters.export(plate, str(DEFAULT_OUTPUT))
     print(f"Exported CG plate to {DEFAULT_OUTPUT.relative_to(REPO_ROOT)}")

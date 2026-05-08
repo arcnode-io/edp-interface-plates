@@ -14,7 +14,7 @@ from cad.model._plate import (
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 SPEC_PATH: Final[Path] = REPO_ROOT / "cad" / "specs" / "BG-AC" / "spec.yaml"
-DEFAULT_OUTPUT: Final[Path] = REPO_ROOT / "cad" / "BG-AC.step"
+DEFAULT_OUTPUT: Final[Path] = REPO_ROOT / "cad" / "specs" / "BG-AC" / "plate.step"
 
 # Reason: v1 commercial — Tesla Megapack 2 XL, 1 MW @ 480V = 1200A peak,
 # split across 2 parallel feeders @ 600A each. 600A AC -> ~3.5" rigid
@@ -43,7 +43,7 @@ def build_bg_ac_plate(
 
 
 def main() -> None:
-    """CLI entry: build v1 commercial BG-AC plate, export to cad/BG-AC.step."""
+    """CLI entry: build v1 commercial BG-AC plate, export to cad/specs/BG-AC/plate.step."""
     plate = build_bg_ac_plate(V1_COMMERCIAL_PARAMS)
     cq.exporters.export(plate, str(DEFAULT_OUTPUT))
     print(f"Exported BG-AC plate to {DEFAULT_OUTPUT.relative_to(REPO_ROOT)}")
