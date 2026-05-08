@@ -43,6 +43,18 @@ _V1_PARAMS_BY_PLATE = {
         "deployment_context": "commercial",
         "revision": "001",
     },
+    "EX-G": {
+        "power_conduit_od_mm": 28.0,  # station service LV
+        "data_conduit_od_mm": 35.0,  # SCADA fiber
+        "deployment_context": "commercial",
+        "revision": "001",
+    },
+    "EX-C": {
+        "power_conduit_od_mm": 35.0,  # OOB mgmt
+        "data_conduit_od_mm": 63.0,  # fiber uplink
+        "deployment_context": "commercial",
+        "revision": "001",
+    },
 }
 
 GROUND_STUD_TAP_DRILL_MM = {"M8": 6.8, "M10": 8.5, "M12": 10.2}

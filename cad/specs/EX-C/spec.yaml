@@ -1,0 +1,111 @@
+plate_id: EX-C
+schema_version: "0"
+description: "Interface Plate, External Services, Compute Container"
+
+# EX-C mounts on compute container long wall. Carries external services:
+# - Site fiber drops (redundant 100G uplink to enterprise/cloud)
+# - Out-of-band management network drop
+# - Ground reference (site grounding grid tie)
+# Standard ARCNODE compute deployment runs cooling internal (CDU + drycooler);
+# water enters via CD plate, not EX-C.
+mating_pair:
+  side_a: site_external
+  side_b: compute_container
+
+outer_dims_mm:
+  L: 840
+  W: 640
+
+deployment_contexts:
+  commercial:
+    material: "6061-T6 aluminum (ASTM B209)"
+    finish: "Type II anodize 15-25 μm (MIL-A-8625)"
+    thickness_mm: 6
+    ip_rating: IP55
+    fasteners: "Zn-plated steel M10 (ASTM F593 G1)"
+    secondary_seal: null
+    ground_stud: M10   # commercial — lower fault current path than BG/EX-G
+  defense_forward:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+  sovereign_government:
+    material: "5083-H116 marine grade (ASTM B209)"
+    finish: "Type III hard anodize 40-60 μm"
+    thickness_mm: 10
+    ip_rating: IP65
+    fasteners: "316 SS M10 (ASTM F593 G2)"
+    secondary_seal: "10mm closed-cell EPDM backer"
+    ground_stud: M12
+
+# Two redundant fiber paths + one OOB mgmt drop + one ground stud.
+penetration_schedule:
+  - id: fiber_uplink_a
+    x_mm: -150
+    y_mm: 200
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Primary 100G fiber uplink + duplex MM/SMF inner-duct.
+      ~2" EMT (~63mm OD) accommodates duct + slack.
+  - id: fiber_uplink_b
+    x_mm: 150
+    y_mm: 200
+    size_driver: param.data_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: Redundant 100G fiber uplink (diverse path from uplink_a).
+  - id: oob_mgmt_conduit
+    x_mm: 0
+    y_mm: -50
+    size_driver: param.power_conduit_od_mm
+    fitting_spec: EMT conduit hub, threaded
+    ots_pn: TBD_after_conduit_supplier_selection
+    notes: |
+      Out-of-band management network drop (separate physical path
+      from production fiber for break-glass admin access).
+      ~1¼" EMT (~35mm OD).
+  - id: ground_stud
+    x_mm: -200
+    y_mm: -300
+    size_driver: context.ground_stud
+    fitting_spec: tapped, sealed with conductive gasket
+    ots_pn: N/A (machined into plate)
+    notes: Site ground tie. M10 commercial (no MV fault path through compute).
+
+mounting_bolts:
+  count: 8
+  inset_mm: 60
+  diameter_mm: 11
+  pattern: corners_and_edge_midpoints
+
+provenance:
+  authored_by: human
+  authored_date: 2026-05-07
+  reviewed_by: TBD_pending_human_review
+  reviewed_date: null
+  confidence_flags:
+    - field: penetration_schedule[*].ots_pn
+      flag: missing
+      note: Conduit hub vendor selection pending procurement engagement.
+    - field: penetration_schedule.fiber_uplink_*.size_driver
+      flag: assumed_default
+      note: |
+        v1 sized for 100G dual-fiber + slack in 2" EMT. Customer site
+        may use larger conduit if running 400G+ multi-pair bundles.
+
+notes: |
+  EX-C is required across ALL profiles. Mounts on compute container
+  long wall.
+
+  Note that EX-C re-uses the size_driver names "param.data_conduit_od_mm"
+  and "param.power_conduit_od_mm" but with different physical meaning
+  (here: fiber conduit and OOB mgmt conduit, not AC power). The driver
+  names are kept generic so a single PlateBuildParams dataclass works
+  across all plates; the v1 commercial values per cad/model/ex_c.py
+  carry the EX-C-appropriate sizes.

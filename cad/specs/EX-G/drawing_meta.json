@@ -1,0 +1,29 @@
+{
+  "part_number": "ARC-PLT-EX-G-001",
+  "description": "Interface Plate, External Services, Grid Container",
+  "revision": "001",
+  "deployment_context": "commercial",
+  "material": "6061-T6 aluminum (ASTM B209)",
+  "finish": "Type II anodize 15-25 \u03bcm (MIL-A-8625)",
+  "thickness_mm": 6.0,
+  "ip_rating": "IP55",
+  "fasteners": "Zn-plated steel M10 (ASTM F593 G1)",
+  "ground_stud": "M12",
+  "outer_dims_mm": {
+    "L": 840.0,
+    "W": 640.0
+  },
+  "general_tolerance": "ISO 2768-m",
+  "build_params": {
+    "power_conduit_od_mm": 28.0,
+    "data_conduit_od_mm": 35.0,
+    "data_conduit_count": 1
+  },
+  "drawing_pipeline_status": "v1_minimal",
+  "deferred": [
+    "GD&T tolerance callouts on penetration positions",
+    "Datum reference frame + ASME Y14.5 symbols",
+    "Surface finish callouts",
+    "Integrated PDF composition with title block template"
+  ]
+}

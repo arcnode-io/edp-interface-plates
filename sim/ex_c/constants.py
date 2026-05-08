@@ -1,0 +1,71 @@
+"""Physical parameters for CG interface plate structural analysis.
+
+CG plate: 6mm 6061-T6 aluminum, 640x840mm, 8x M10 bolts, mounted on welded
+A36 receiver frame. Two load cases:
+1. Bolt pattern under fault current (joint heating)
+2. Thermal expansion differential (plate vs frame across temp swing)
+
+Expected values derived in theory.ipynb (see same dir).
+"""
+
+from typing import Final
+
+import pint
+from uncertainties import ufloat
+
+ureg = pint.UnitRegistry()
+
+# --- Plate geometry (commercial deployment_context per ADR-008) ---
+PLATE_THICKNESS: Final = 6.0 * ureg.mm
+PLATE_WIDTH: Final = 640.0 * ureg.mm
+PLATE_LENGTH: Final = 840.0 * ureg.mm
+
+# --- Material: 6061-T6 aluminum (ASTM B209, ASM Aluminum Handbook) ---
+PLATE_DENSITY: Final = 2.70 * ureg.g / ureg.cm**3
+PLATE_CP: Final = 896 * ureg.J / (ureg.kg * ureg.kelvin)
+PLATE_ALPHA: Final = 23.6e-6 / ureg.kelvin
+PLATE_YIELD_AT_25C: Final = 276 * ureg.MPa
+
+# --- Receiver frame: A36 mild steel ---
+FRAME_ALPHA: Final = 11.7e-6 / ureg.kelvin
+
+# --- Fasteners: 8x M10 grade 8.8 zinc-plated steel ---
+BOLT_COUNT: Final = 8
+BOLT_DIAMETER: Final = 10.0 * ureg.mm
+BOLT_CLEARANCE_HOLE: Final = 11.0 * ureg.mm
+BOLT_INSET: Final = 60.0 * ureg.mm
+BOLT_LENGTH: Final = 30.0 * ureg.mm  # nominal engagement
+STEEL_DENSITY: Final = 7.85 * ureg.g / ureg.cm**3
+STEEL_CP: Final = 460 * ureg.J / (ureg.kg * ureg.kelvin)
+
+# --- Bolt pattern derived ---
+PATTERN_WIDTH: Final = PLATE_WIDTH - 2 * BOLT_INSET
+PATTERN_LENGTH: Final = PLATE_LENGTH - 2 * BOLT_INSET
+PATTERN_DIAGONAL: Final = (PATTERN_WIDTH**2 + PATTERN_LENGTH**2) ** 0.5
+BOLT_CLEARANCE_RADIAL: Final = (BOLT_CLEARANCE_HOLE - BOLT_DIAMETER) / 2
+
+# --- Fault current scenario for EX-C ---
+# Compute container LV bus fault contribution at the EX-C ground path.
+# Lower than CG (no MV path through compute) — call it 6 kA worst case
+# for symmetry with BG-AC sizing assumptions.
+FAULT_CURRENT: Final = ufloat(6.0, 1.2) * ureg.kA
+FAULT_DURATION: Final = (5 / 60) * ureg.s
+R_JOINT_PER_BOLT: Final = ufloat(125, 75) * ureg.microohm
+
+# --- Operating temperature range (commercial deployment) ---
+T_AMBIENT_FAULT_C: Final = 25.0
+DELTA_T_OPERATING: Final = 85.0 * ureg.kelvin  # -25 to +60 °C swing
+
+# --- Verdict thresholds ---
+JOINT_TEMP_THRESHOLD_C: Final = 150.0  # 6061-T6 yield derating point
+
+# --- Expected values (closed-form analytical) ---
+# EX-C fault current much smaller than CG; temp rise scales as I².
+# Worst-case fault (+1sigma = 7.2 kA): rise = 50.8 * (7.2/30.8)² = ~2.8 K.
+EXPECTED_JOINT_TEMP_RISE: Final = 2.8 * ureg.kelvin
+EXPECTED_JOINT_TEMP_RISE_REL_TOL: Final = 0.50
+
+# Reason: 6061 vs A36 differential alpha = 11.9e-6 /K. Bolt pattern diagonal 888mm.
+# At deltaT=85K: differential expansion 0.898mm. Per-corner-bolt offset = 0.449mm.
+EXPECTED_THERMAL_OFFSET: Final = 0.449 * ureg.mm
+EXPECTED_THERMAL_OFFSET_REL_TOL: Final = 0.05  # ±5% — material coefs well-characterized
