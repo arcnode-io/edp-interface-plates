@@ -37,6 +37,8 @@ build = { cmd = "python cad/model/model.py", env = { PYTHONPATH = "." } }
 inspect-model = "bash -c 'nohup freecad cad/l_bracket.step &>/dev/null &'"
 inspect-asm = "bash -c 'PYTHONPATH=. python cad/model/assembly.py && nohup freecad cad/l_bracket_assy.step &>/dev/null &'"
 generate-model = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_drawing.py'"
+generate-plate-cg = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CG'"
+generate-plate-bg-ac = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-AC'"
 generate-asm = { cmd = "bash -c 'mkdir -p output/fab && python cad/model/assembly.py && cp cad/l_bracket.step output/fab/ && cp cad/l_bracket_assy.step output/fab/ && echo \"Copied STEP + assembly to output/fab/\"'", env = { PYTHONPATH = "." } }
 validate-model = { cmd = "python cad/model/validate_model.py", env = { PYTHONPATH = "." } }
 validate-asm = { cmd = "python cad/model/validate_asm.py", env = { PYTHONPATH = "." } }
