@@ -9,15 +9,17 @@ import pytest
 from sim.cg.constants import (
     BOLT_CLEARANCE_RADIAL,
     BOLT_DIAMETER,
-    SLOT_LENGTH,
+    DELTA_T_DEFENSE,
     EXPECTED_JOINT_TEMP_RISE,
     EXPECTED_JOINT_TEMP_RISE_REL_TOL,
     EXPECTED_THERMAL_OFFSET,
+    EXPECTED_THERMAL_OFFSET_DEFENSE,
     EXPECTED_THERMAL_OFFSET_REL_TOL,
     FAB_TOLERANCE,
     JOINT_TEMP_THRESHOLD_C,
     PATTERN_DIAGONAL,
     SAFETY_MARGIN,
+    SLOT_LENGTH,
     T_AMBIENT_FAULT_C,
     ureg,
 )
@@ -84,6 +86,32 @@ class TestCGPlate:
         budget_per_side_mm = offset_mm + fab_tol_mm + margin_mm
         assert slot_radial_extra_mm >= budget_per_side_mm, (
             f"slot radial extra {slot_radial_extra_mm:.2f}mm < "
+            f"required budget {budget_per_side_mm:.2f}mm"
+        )
+
+    def test_thermal_offset_defense_matches_theory(self) -> None:
+        """Defense ΔT=111K (MIL-STD-810H) gives 0.586mm offset (linear scale)."""
+        # arrange
+        expected_mm = EXPECTED_THERMAL_OFFSET_DEFENSE.to(ureg.mm).magnitude
+        # act
+        actual_mm = solve(delta_t=DELTA_T_DEFENSE).thermal_offset.to(ureg.mm).magnitude
+        # assert
+        assert actual_mm == pytest.approx(
+            expected_mm, rel=EXPECTED_THERMAL_OFFSET_REL_TOL
+        )
+
+    def test_slot_accommodates_defense_thermal_offset(self) -> None:
+        """13mm slot has 0.11mm headroom even at defense ΔT=111K."""
+        # arrange
+        slot_radial_extra_mm = ((SLOT_LENGTH - BOLT_DIAMETER) / 2).to(ureg.mm).magnitude
+        fab_tol_mm = FAB_TOLERANCE.to(ureg.mm).magnitude
+        margin_mm = SAFETY_MARGIN.to(ureg.mm).magnitude
+        # act
+        offset_mm = solve(delta_t=DELTA_T_DEFENSE).thermal_offset.to(ureg.mm).magnitude
+        # assert
+        budget_per_side_mm = offset_mm + fab_tol_mm + margin_mm
+        assert slot_radial_extra_mm >= budget_per_side_mm, (
+            f"defense slot radial extra {slot_radial_extra_mm:.2f}mm < "
             f"required budget {budget_per_side_mm:.2f}mm"
         )
 

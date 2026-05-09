@@ -4,12 +4,14 @@ import pytest
 
 from sim.cd.constants import (
     BOLT_CLEARANCE_RADIAL,
+    DELTA_T_DEFENSE,
     EXPECTED_FLOW_PER_LINE,
     EXPECTED_FLOW_REL_TOL,
     EXPECTED_JOINT_TEMP_RISE,
     EXPECTED_JOINT_TEMP_RISE_REL_TOL,
     EXPECTED_QD_BODY_OD,
     EXPECTED_THERMAL_OFFSET,
+    EXPECTED_THERMAL_OFFSET_DEFENSE,
     EXPECTED_THERMAL_OFFSET_REL_TOL,
     JOINT_TEMP_THRESHOLD_C,
     QD_RATED_FLOW,
@@ -61,6 +63,17 @@ class TestCDPlateStructural:
         actual_mm = solve().thermal_offset.to(ureg.mm).magnitude
         # assert
         assert actual_mm < clearance_mm
+
+    def test_thermal_offset_defense_matches_theory(self) -> None:
+        """Defense ΔT=111K (MIL-STD-810H) gives 0.586mm offset."""
+        # arrange
+        expected_mm = EXPECTED_THERMAL_OFFSET_DEFENSE.to(ureg.mm).magnitude
+        # act
+        actual_mm = solve(delta_t=DELTA_T_DEFENSE).thermal_offset.to(ureg.mm).magnitude
+        # assert
+        assert actual_mm == pytest.approx(
+            expected_mm, rel=EXPECTED_THERMAL_OFFSET_REL_TOL
+        )
 
 
 class TestCDPlateCoolant:

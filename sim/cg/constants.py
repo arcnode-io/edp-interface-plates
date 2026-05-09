@@ -82,4 +82,8 @@ EXPECTED_JOINT_TEMP_RISE_REL_TOL: Final = 0.50  # ±50% — joint R is dominant 
 # Reason: 6061 vs A36 differential alpha = 11.9e-6 /K. Bolt pattern diagonal 888mm.
 # At deltaT=85K: differential expansion 0.898mm. Per-corner-bolt offset = 0.449mm.
 EXPECTED_THERMAL_OFFSET: Final = 0.449 * ureg.mm
-EXPECTED_THERMAL_OFFSET_REL_TOL: Final = 0.05  # ±5% — material coefs well-characterized
+EXPECTED_THERMAL_OFFSET_REL_TOL: Final = (
+    0.05  # Defense ΔT = 111 K → offset scales linearly: 0.449 × (111/85) = 0.586 mm.
+)
+EXPECTED_THERMAL_OFFSET_DEFENSE: Final = 0.586 * ureg.mm
+# ±5% — material coefs well-characterized
