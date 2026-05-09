@@ -13,8 +13,6 @@ import cadquery as cq
 import yaml
 from pydantic import BaseModel
 
-from cad.model.engraving import engrave_logo
-
 DeploymentContext = Literal["commercial", "defense_forward", "sovereign_government"]
 
 # Reason: M-thread tap drill diameters per ISO 965; minor Ø for tapping.
@@ -148,16 +146,18 @@ def build_plate(params: PlateBuildParams, spec: PlateSpec) -> cq.Workplane:
     wide_dim = spec.outer_dims_mm.W
     plate = cq.Workplane("XY").box(wide_dim, long_dim, ctx.thickness_mm)
 
+    # Reason: cadquery's .center(x, y) is RELATIVE and accumulates across calls
+    # in a chain. Use pushPoints() for absolute positioning on the workplane.
     for pen in spec.penetration_schedule:
         diameter = _resolve_penetration_diameter(pen, params, ctx)
-        plate = plate.faces(">Z").workplane().center(pen.x_mm, pen.y_mm).hole(diameter)
+        plate = (
+            plate.faces(">Z")
+            .workplane()
+            .pushPoints([(pen.x_mm, pen.y_mm)])
+            .hole(diameter)
+        )
 
-    plate = _cut_mounting_bolts(plate, spec.mounting_bolts, long_dim, wide_dim)
-
-    # Reason: ARCNODE logo engraved on the OUTWARD-facing plate face. Build pose
-    # has +Z up; the assembly composer rotates plates so their -Z face points
-    # outward. Engrave that face so all interface plates carry the brand mark.
-    return engrave_logo(plate, face_z_mm=-ctx.thickness_mm / 2, outward_normal_z=-1)
+    return _cut_mounting_bolts(plate, spec.mounting_bolts, long_dim, wide_dim)
 
 
 def _resolve_penetration_diameter(
@@ -213,15 +213,25 @@ def _cut_mounting_bolts(
         (x_outer, 0),
     ]
 
+    # Reason: cadquery .center() is RELATIVE; use pushPoints for absolute coords.
     # Short-axis midpoints always round — small radial offset, ample clearance.
-    for x, y in short_axis_midpoints:
-        plate = plate.faces(">Z").workplane().center(x, y).hole(bolts.diameter_mm)
+    if short_axis_midpoints:
+        plate = (
+            plate.faces(">Z")
+            .workplane()
+            .pushPoints(short_axis_midpoints)
+            .hole(bolts.diameter_mm)
+        )
 
     slotted_positions = corners + long_axis_midpoints
     if bolts.slot_length_mm is None:
         # Legacy round-hole geometry; preserved for backward compat.
-        for x, y in slotted_positions:
-            plate = plate.faces(">Z").workplane().center(x, y).hole(bolts.diameter_mm)
+        plate = (
+            plate.faces(">Z")
+            .workplane()
+            .pushPoints(slotted_positions)
+            .hole(bolts.diameter_mm)
+        )
         return plate
 
     for x, y in slotted_positions:
@@ -230,11 +240,13 @@ def _cut_mounting_bolts(
         # axis from default +X by that amount, which lands it along the radial.
         # For long-axis midpoints at (0, ±y), atan2 returns ±90° → slot oriented
         # along Y. For corners, slot points along the diagonal.
+        # Reason: slot2D needs to be at workplane origin, so reset workplane
+        # via fresh .faces(">Z").workplane().moveTo(x, y) per slot.
         angle_deg = math.degrees(math.atan2(y, x))
         plate = (
             plate.faces(">Z")
             .workplane()
-            .center(x, y)
+            .moveTo(x, y)
             .slot2D(bolts.slot_length_mm, bolts.diameter_mm, angle=angle_deg)
             .cutThruAll()
         )

@@ -1,13 +1,13 @@
 """Single dispatcher for all interface plates.
 
-Replaces per-plate wrapper modules (cg.py, bg_ac.py, ex_g.py, ex_c.py, cd.py).
 Each spec.yaml carries a `default_params:` block; the dispatcher loads that
-spec, builds the plate, and exports STEP. Collapsed per Q-collapse decision:
-all plates use identical build logic, so per-plate wrappers were overhead.
+spec, builds the plate, and exports STEP. Per-plate wrapper modules collapsed
+per Q-collapse decision; per-context output (commercial vs defense) keyed
+by deployment_context.
 
 Usage:
     python cad/model/build.py --plate-id CG
-    python cad/model/build.py --all
+    python cad/model/build.py --all --deployment-context defense_forward
 """
 
 import argparse
@@ -31,8 +31,6 @@ logger = logging.getLogger(__name__)
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 SPECS_DIR: Final[Path] = REPO_ROOT / "cad" / "specs"
 
-# Reason: enumerate the v1 plate fleet here as the single source of truth;
-# the dispatcher iterates this list for `--all`.
 PLATE_IDS: Final[tuple[str, ...]] = ("CG", "BG-AC", "BG-DC", "CD")
 
 
@@ -44,10 +42,9 @@ def spec_path_for(plate_id: str) -> Path:
 def step_path_for(plate_id: str, deployment_context: str = "commercial") -> Path:
     """Return cad/specs/{plate_id}/plate{-defense}.step.
 
-    Commercial → plate.step (unchanged).
-    defense_forward / sovereign_government → plate-defense.step (suffix used
-    for both DoD contexts; spec.yaml deployment_contexts table currently has
-    them identical, so the artifact is shared).
+    Commercial → plate.step. defense_forward + sovereign_government share
+    plate-defense.step (spec.yaml deployment_contexts table is identical
+    for both DoD contexts).
     """
     suffix = "" if deployment_context == "commercial" else "-defense"
     return SPECS_DIR / plate_id / f"plate{suffix}.step"

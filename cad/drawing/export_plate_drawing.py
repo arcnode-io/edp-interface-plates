@@ -34,11 +34,11 @@ GROUND_STUD_TAP_DRILL_MM = {"M8": 6.8, "M10": 8.5, "M12": 10.2}
 
 
 def _plate_scale(plate_w_mm: float, plate_h_mm: float) -> float:
-    """Pick a scale that makes the face view fit ~half of A3 with margins."""
-    # Reason: A3 = 420x297, title block 58mm. Left half usable ~190x230.
-    # Allow 10mm margin on each side.
-    target_w_mm = 170.0
-    target_h_mm = 220.0
+    """Pick a scale that makes the TOP face view fit ~half of A1 sheet."""
+    # Reason: A1 = 841x594. Left half ~420x520 usable after margins.
+    # Aim for plate face ~340x440 (room around for dims).
+    target_w_mm = 340.0
+    target_h_mm = 440.0
     return min(target_w_mm / plate_w_mm, target_h_mm / plate_h_mm)
 
 
@@ -94,7 +94,9 @@ def export_plate_drawing(plate_id: str) -> Path:
             f"run `python cad/model/build.py --plate-id {plate_id}` first"
         )
 
-    template_path = TEMPLATES_DIR / "A3_Landscape_EWAI.svg"
+    # Reason: A1 (841×594mm) gives ~2× the layout headroom of A3. Easier
+    # to clear ISO from title block, dim text from views, notes from edges.
+    template_path = TEMPLATES_DIR / "A1_Landscape_EWAI.svg"
     doc_name = plate_id.replace("-", "_").lower()
     doc = App.newDocument(doc_name)
     shape = Part.read(str(step_path))
@@ -137,9 +139,11 @@ def export_plate_drawing(plate_id: str) -> Path:
     # Plates are flat (thickness << face dims), so compute_layout's 3D-part
     # heuristic positions views off-page. Override with face-dominant layout.
     scale = _plate_scale(bb.XLength, bb.YLength)
-    face_cx, face_cy = 110, 180  # TOP view = face, left half
-    edge_cx, edge_cy = 320, 235  # FRONT view = edge thickness sliver, right top
-    iso_cx, iso_cy = 320, 130  # ISOMETRIC for context, right bottom
+    # A1 landscape = 841×594. Title block bottom-right.
+    face_cx, face_cy = 220, 320  # TOP face on left half
+    edge_cx, edge_cy = 600, 480  # FRONT thickness sliver top-right
+    iso_cx, iso_cy = 620, 300  # ISO mid-right
+    iso_scale_factor = 0.6
 
     view_specs = [
         ("TOP", (0, 0, 1), face_cx, face_cy),
@@ -149,10 +153,14 @@ def export_plate_drawing(plate_id: str) -> Path:
     view_objects = {}
     for name, direction, cx, cy in view_specs:
         v = doc.addObject("TechDraw::DrawViewPart", name)
-        page.addView(v)
+        # Reason: set Source + Direction + Scale BEFORE addView so HLR
+        # initialization sees the right source. addView before configure
+        # caused getVisibleEdges to return only ~13 edges (plate has ~30+).
         v.Source = [part_obj]
         v.Direction = App.Vector(*direction)
-        v.Scale = scale
+        v.ScaleType = "Custom"
+        v.Scale = scale * iso_scale_factor if name == "ISOMETRIC" else scale
+        page.addView(v)
         v.X = cx
         v.Y = cy
         view_objects[name] = v
@@ -163,9 +171,21 @@ def export_plate_drawing(plate_id: str) -> Path:
 
     _wait_for_gui(10)
 
-    from cad.drawing.plate_dimensions import add_plate_dimensions, add_view_labels
+    from cad.drawing.plate_dimensions import (
+        add_notes_block,
+        add_plate_dimensions,
+        add_thickness_dimension,
+        add_view_labels,
+    )
 
     dim_names = add_plate_dimensions(doc, page, face, spec, params)
+    front_view = view_objects.get("FRONT")
+    if front_view is not None:
+        thick_name = add_thickness_dimension(doc, page, front_view, spec, params)
+        if thick_name:
+            dim_names.append(thick_name)
+    notes_name = add_notes_block(doc, page, params)
+    dim_names.append(notes_name)
     label_positions = {name: (cx, cy - 50) for name, _direction, cx, cy in view_specs}
     label_names = add_view_labels(doc, page, label_positions)
     print(f"Added: {dim_names + label_names}")

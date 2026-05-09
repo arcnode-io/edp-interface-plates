@@ -1,218 +1,298 @@
 ---
 name: generate-gdt
-description: Add manufacturing annotations (view labels, dimensions, tolerances, surface finish) to a FreeCAD TechDraw drawing. Two-phase — deterministic edge matching then visual review loop.
+description: Add GD&T manufacturing annotations (dims, tolerances, view labels, surface finish, notes) to FreeCAD TechDraw drawings for the plate fleet. One invocation per (plate_id, deployment_context) pair. Compounds learnings as new plates are processed.
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent
 ---
 
-# Generate GD&T Manufacturing Annotations
+# Generate GD&T Manufacturing Annotations — Plate Fleet
 
-Add dimensions, tolerances, view labels, and surface finish callouts to an existing TechDraw drawing exported by `export_drawing.py`.
+Adds dimensions, tolerances, view labels, notes block, and detail views to existing TechDraw drawings exported by `cad/drawing/export_plate_drawing.py`. Single invocation per `(plate_id, deployment_context)` pair.
+
+## Scope
+
+| Plate fleet | CG, BG-AC, BG-DC, CD |
+|---|---|
+| Geometry | 640 × 840 × 6mm (commercial) or × 10mm (defense), 8-bolt perimeter pattern |
+| Slot mitigation (ADR-015) | 4 corners + 2 long-axis midpoints slotted 13mm × Ø11; short-axis midpoints round Ø11 |
+| Penetrations | per `cad/specs/{plate_id}/spec.yaml::penetration_schedule`; CG=3, BG-AC=4, BG-DC=4, CD=4 |
+| Per-context drawings | `plate.dxf` (commercial) + `plate-defense.dxf` (defense) emitted separately — no alt-note hedging |
 
 ## Prerequisites
 
-- `uv run poe generate-asm` must have run successfully — views must exist on the page
-- `cad/layout_spec.yaml` defines sheet size, views, tolerances, and general tolerance class
-- `sim/constants.py` defines all bracket geometry constants (used for edge matching)
+- `uv run poe build --plate-id {ID}` (cadquery STEP) and `uv run poe build-defense` for defense variant
+- `uv run poe generate-plate-{id}` runs FreeCAD TechDraw pipeline — produces views on page
+- `cad/specs/{plate_id}/spec.yaml` defines outer dims, penetrations, mounting bolts, deployment contexts
+- `sim/{plate_id}/constants.py` defines material constants (used for inspection callouts)
 
-## Phase 1: Deterministic Dimension Placement
+## Design contract (locked PM 2026-05-09)
 
-Run `cad/drawing/dimensions.py` inside FreeCAD to add dimensions programmatically.
+**Views (4):** TOP (primary, dominant), FRONT (6/10mm thickness sliver), ISO (context), DETAIL (2:1 corner slot).
 
-### 1. Edge Matching Strategy
+**Tolerances:**
+| Feature | Tolerance | Reason |
+|---|---|---|
+| General | ISO 2768-m | per ADR-015 |
+| Bolt holes Ø11 | H9 | bolt-to-slot-side bearing |
+| Slot length 13mm | ISO 2768-m (±0.2) | sliding clearance, thermal headroom 0.751mm |
+| Slot width 11mm | H9 | matches round bolt holes |
+| Penetrations | H10 | clearance fit for hub installation; doesn't bias seal toward leakage |
 
-After `doc.recompute()`, match edges by **curve type + length** to known constants from `sim/constants.py`. This is deterministic for a given part geometry.
+**Datums:** A = plate face (back of FRONT view, controls thickness); B = horizontal centerline; C = vertical centerline.
+
+**Position dims:** ordinate from centerlines (B/C). Plate is symmetric → centerlines natural. Avoids chained tolerance stack.
+
+**Notes block** (left of title block):
+1. MATERIAL PER TITLE BLOCK
+2. ANODIZE PER TITLE BLOCK (AFTER MACHINING)
+3. DEBURR ALL EDGES; BREAK SHARP CORNERS 0.3mm × 45°
+4. GENERAL TOLERANCE PER TITLE BLOCK
+5. GROUND STUD: TAP M10 (commercial) / M12 (defense) PER TITLE BLOCK
+6. (defense only) APPLY EPDM SECONDARY SEAL PER MIL-DTL-XXXX [⚠ flag for spec lookup before drawing release; do NOT ship TBD spec number]
+
+**Title block** (read from spec.yaml + deployment_context):
+- `surface_finish`: `deployment_contexts.{ctx}.finish` (e.g. "Type II anodize 15-25 μm (MIL-A-8625)")
+- `material`: `deployment_contexts.{ctx}.material` (e.g. "6061-T6 aluminum (ASTM B209)")
+- `general_tolerance`: "ISO 2768-m"
+- `part_number`: `ARC-PLT-{id}-{rev}` + "-D" suffix for defense
+- `revision`: `default_params.revision` (e.g. "001")
+
+**Detail view:** anchor at corner bolt slot (e.g. position (+260, +360)), 2:1 scale, shows 13mm × Ø11 slot with radial arrow toward pattern center. Single annotation **"TYP 6 PLACES (4 corners + 2 long-axis midpoints, slot oriented radially toward pattern center)"**.
+
+## Phase 1: Deterministic dim placement
+
+Lives in `cad/drawing/plate_dimensions.py`. Operates on plain dicts (loaded from spec.yaml YAML) — does NOT depend on cadquery so it can run inside FreeCAD's bundled Python.
+
+### 1. Edge matching strategy
+
+After `doc.recompute()`, match edges by **curve type + length** to known dims from `spec.yaml`. This is deterministic for a given plate geometry.
 
 ```python
 edges = view.getVisibleEdges()
 for i, edge in enumerate(edges):
-    curve = edge.Curve
-    length = edge.Length
-    # Match Line edges by length to constants
-    # Match Circle edges by radius to HOLE_DIAMETER/2
+    curve_type = type(edge.Curve).__name__
+    # Line edge → match length to outer dim or slot length
+    # Circle edge → match radius to bolt Ø/2 or penetration Ø/2
 ```
 
-**Known edge map for L-bracket (from probing):**
+### 2. Known edge map per plate (TOP view, normal +Z)
 
-Front view `(0, -1, 0)`:
-| Edge | Curve | Length/Radius | Constant |
-|------|-------|---------------|----------|
-| Edge5 | Line | 80mm | VERTICAL_LEG_HEIGHT |
-| Edge6 | Line | 74mm | HORIZ_LEG + THICKNESS |
-| Edge2 | Line | 14mm | BRACKET_THICKNESS |
-| Edge0 | Line | 52mm | HORIZ_LEG - 2*FILLET_RADIUS (visible portion) |
-| Edge1 | Circle | 12.6mm arc | fillet arc (R8) |
-
-Right view `(1, 0, 0)`:
-| Edge | Curve | Radius | Constant |
-|------|-------|--------|----------|
-| Edge4,5 | Circle | 4.25mm | HOLE_DIAMETER/2 (top hole, split) |
-| Edge11 | Circle | 4.25mm | HOLE_DIAMETER/2 (bottom hole) |
+| Edge kind | Match key | Source |
+|---|---|---|
+| Outer width | Line, length = `outer_dims_mm.W` (640) | spec.yaml |
+| Outer length | Line, length = `outer_dims_mm.L` (840) | spec.yaml |
+| Bolt hole | Circle, radius = `mounting_bolts.diameter_mm / 2` (5.5) | spec.yaml |
+| Slot side | Line, length ≤ `slot_length_mm - diameter_mm` (≤ 2mm) | spec.yaml |
+| Slot end-cap | Circle, radius = `diameter_mm / 2` (5.5) | spec.yaml |
+| Penetration | Circle, radius from `_resolve_diameter(pen, params, ctx) / 2` | spec.yaml + params |
 
 **IMPORTANT:**
-- Edge indices are HLR-dependent. Always match by geometry (type + length/radius), never by hardcoded index. The edge map above is a reference — verify at runtime.
-- `getVisibleEdges()` returns **model-space** lengths, NOT scaled. Match against raw constant values (e.g. 80.0, not 80.0 * scale).
-- HLR runs asynchronously — must call `Gui.updateGui()` + `time.sleep(0.3)` loop (10 iterations) after `doc.recompute()` before accessing edges. Without this, `getVisibleEdges()` returns empty.
+- Edge indices are HLR-dependent — always match by geometry, never hardcoded index
+- `getVisibleEdges()` returns model-space lengths, NOT scaled. Match raw spec values
+- HLR runs async — call `Gui.updateGui()` + `time.sleep(0.3)` × 10 after `doc.recompute()` before accessing edges
+- Slot edges: a 13×11 slot has 2 short Line sides (length = slot_length − diameter = 2mm) + 2 semicircle end-caps (radius = bolt_clearance_radius = 5.5mm). The end-cap radius **collides** with bolt-hole radius — disambiguate by checking position (slots are at corners + long-axis midpoints; round bolts are at short-axis midpoints).
 
-### 2. Dimensions to Add
+### 3. Dimensions to add (per plate)
 
-**Front view:**
-1. **Vertical leg height** — DistanceY on Edge5 → 80mm
-2. **Total width** — DistanceX on Edge6 → 74mm (or break into 60mm leg + 14mm thickness)
-3. **Bracket thickness** — DistanceX on Edge2 → 14mm
-4. **Fillet radius** — Radius on Edge1 → R8
+**TOP view:**
+1. **Outer width** → `DistanceX` on outer edge, format `%.0f`
+2. **Outer length** → `DistanceY` on outer edge, format `%.0f`
+3. **Per-penetration position** → 2 ordinate dims (X/Y from centerline), format `%.0f`
+4. **Per-penetration diameter** → `Diameter` on penetration circle, format depends on pen.id:
+   - power/data conduit: `⌀%.1f H10 ({pen.id})`
+   - ground_stud: `⌀%.1f M{ground_stud_size} TAP THRU` (per context)
+5. **Bolt diameter** → `Diameter` on bolt circle, format `8X ⌀%.1f H9` (one callout, TYP all bolts)
+6. **Bolt pattern positions** → ordinate dims at one corner + one short-axis midpoint, with TYP note
+7. **Slot length** → `Distance` between slot end-cap centers, format `%.0f` + note "13 SLOT"
+8. **Slot orientation arrow** → manual annotation pointing radially toward pattern center
 
-**Right view:**
-5. **Bolt hole diameter** — Diameter on hole circle → ⌀8.5 H9
-6. **Bolt spacing** — Distance between hole centers → 50mm ±0.1
-7. **Bracket width** — DistanceX → 50mm
+**FRONT view:**
+9. **Plate thickness** → `DistanceY` on edge thickness, format `%.0f` (6mm commercial / 10mm defense, from `deployment_contexts.{ctx}.thickness_mm`)
 
-### 3. Tolerances
+**DETAIL view (2:1 scale at corner slot):**
+10. **Slot length** 13mm → `DistanceX` on slot, format `%.0f` + tolerance note "ISO 2768-m"
+11. **Slot width** Ø11 → `Diameter` on end-cap, format `⌀%.1f H9`
+12. **TYP annotation** → manual text "TYP 6 PLACES (4 CORNERS + 2 LONG-AXIS MIDPOINTS)"
 
-Read `general_tolerance` from `layout_spec.yaml` (default: `ISO 2768-m`).
+### 4. Tolerances applied to dim properties
 
-| Feature | Tolerance | Source |
-|---------|-----------|--------|
-| Bolt holes | H9 (+0.036/+0) | ISO 286, clearance fit for M8 |
-| Bolt spacing | ±0.1mm | Critical for bolt pattern alignment |
-| General dims | ISO 2768-m | All dimensions not specifically toleranced |
-
-Apply via `DrawViewDimension` properties:
 ```python
-dim.FormatSpec = "%.1f"  # or custom format
+# H9 hole (M10 clearance, 6-30mm range, +0.036/+0)
 dim.OverTolerance = 0.036
 dim.UnderTolerance = 0.0
+dim.FormatSpec = "⌀%.1f H9"
+
+# H10 hole (M73 conduit hub, 30-80mm range, +0.120/+0)
+dim.OverTolerance = 0.120  # ISO 286-2 H10 for 50-80mm range
+dim.UnderTolerance = 0.0
+dim.FormatSpec = "⌀%.1f H10"
+
+# ISO 2768-m on general dims (handled by title block, no per-dim tol)
+dim.FormatSpec = "%.0f"
 ```
 
-### 4. View Labels
+ISO 286-2 H9/H10 ranges by nominal diameter (mm):
 
-`DrawViewAnnotation` X/Y works — but **must be set AFTER `page.addView(anno)`**, then `doc.recompute()`. Setting before `addView` gets overwritten to page center. This is an ordering requirement, not a bug.
+| Range | H9 (+) | H10 (+) |
+|---|---|---|
+| 6-10 | 0.036 | 0.058 |
+| 10-18 | 0.043 | 0.070 |
+| 18-30 | 0.052 | 0.084 |
+| 30-50 | 0.062 | 0.100 |
+| 50-80 | 0.074 | 0.120 |
+| 80-120 | 0.087 | 0.140 |
+
+### 5. View labels
+
+`DrawViewAnnotation` X/Y must be set **AFTER** `page.addView(anno)`, then `doc.recompute()`. Setting before `addView` gets overwritten to page center. Ordering requirement, not bug.
 
 ```python
-anno = doc.addObject("TechDraw::DrawViewAnnotation", "LabelFront")
-anno.Text = ["FRONT"]
+anno = doc.addObject("TechDraw::DrawViewAnnotation", "LabelTop")
+anno.Text = ["TOP"]
 anno.TextSize = 5.0
-page.addView(anno)       # adds to page (resets X/Y to center)
-anno.X = front_cx        # set AFTER addView
-anno.Y = front_cy - 30   # below view
+page.addView(anno)
+anno.X = top_cx
+anno.Y = top_cy - 30
 doc.recompute()
 ```
 
-Labels needed: `FRONT`, `RIGHT`, `TOP`, `ISOMETRIC` — positioned below each view. Already placed by `dimensions.add_view_labels()` in Phase 1.
+Labels needed: `TOP`, `FRONT`, `ISO`, `DETAIL A` (with detail bubble on TOP).
 
-**Label placement rules:**
-- Labels go **below** the view, never overlapping part geometry
-- Use `cy - 30` offset (30mm below view center) as starting point
-- During visual review, verify no label overlaps any part outline — adjust Y downward if needed
-- For isometric views, the part extends further below center — use a larger offset or check visually
-- Label text: 5mm, bold, centered horizontally on the view
+### 6. Notes block (left of title block)
 
-### 5. Title Block Annotations
+`DrawViewAnnotation` with multi-line text:
+```python
+notes = doc.addObject("TechDraw::DrawViewAnnotation", "Notes")
+notes.Text = [
+    "NOTES:",
+    "1. MATERIAL PER TITLE BLOCK",
+    "2. ANODIZE PER TITLE BLOCK (AFTER MACHINING)",
+    "3. DEBURR ALL EDGES; BREAK SHARP CORNERS 0.3mm x 45 deg",
+    "4. GENERAL TOLERANCE PER TITLE BLOCK",
+    "5. GROUND STUD: TAP PER TITLE BLOCK (COMMERCIAL M10 / DEFENSE M12)",
+]
+if deployment_context != "commercial":
+    notes.Text.append("6. APPLY EPDM SECONDARY SEAL PER MIL-DTL-XXXX")  # ⚠ TBD lookup
+notes.TextSize = 3.0
+page.addView(notes)
+notes.X = -180  # left side of A3 sheet
+notes.Y = -100
+```
 
-Add to title block via `tmpl.EditableTexts`:
-- `general_tolerance`: "ISO 2768-m" (or from layout_spec)
-- `surface_finish`: "Ra 3.2 (machined) / As-printed (MJF)" for PA12
-- Verify material field matches `sim/constants.py`
+## Phase 2: Visual review loop (max 5 iterations per plate)
 
-## Phase 2: Visual Review Loop (max 5 iterations)
+Phase 1 places correct dims on correct edges; auto-placement defaults often produce mediocre presentation. This phase refines.
 
-Phase 1 places correct dimensions on correct edges, but TechDraw's auto-placement defaults produce mediocre presentation. This phase refines:
-- **Dimension leader line angles** — hole callout rotated diagonally, should be horizontal
-- **Text size** — too small at print scale
-- **Spacing** — dimensions crowded near fillet area, need breathing room
-- **Missing dimensions** — bolt spacing (50mm center-to-center) not yet placed
-- **Offsets** — arrows sit on edges instead of being spaced out via extension lines
+### Iteration cycle
 
-**Iteration cycle:**
-
-1. **Run full export:**
+1. **Run pipeline:**
    ```bash
-   uv run poe generate-asm
+   uv run poe generate-plate-{id}
    ```
 2. **Export PNG for review:**
    ```bash
-   rsvg-convert -w 2400 output/drawings/l_bracket_sheet.svg -o /tmp/drawing_review.png
+   rsvg-convert -w 2400 /tmp/{ID}_sheet.svg -o /tmp/drawing_review.png
    ```
-3. **Read and inspect the PNG** — look for:
-   - Dimension lines overlapping views or each other
+3. **Read + inspect PNG** for:
+   - Dim lines overlapping views or each other
    - Leader lines crossing
    - Labels clipped by sheet border or title block
-   - Tolerances illegible (too small or overlapping)
-   - Dimension text not readable at print scale
-   - Missing dimensions on critical features
-4. **If issues found:** adjust in `dimensions.py` (offsets, FormatSpec, text size), re-run from step 1
-5. **If clean:** proceed to final export
+   - Tolerances illegible at print scale
+   - Missing dims on critical features (slot length most commonly missed)
+   - Ordinate dim chains not clean (origin baseline visible?)
+   - Detail bubble positioned wrong (should be on TOP at the detail's source edge)
+4. **If issues:** adjust offsets in `plate_dimensions.py`, re-run from step 1
+5. **If clean:** proceed to next plate
 
-After converging, the adjusted values become the defaults in `dimensions.py`.
+After CG converges, **before BG-AC**: update this skill file with edge-match recipes that worked + layout offsets that converged + gotchas hit.
 
-## Phase 3: Final Export
+### Chug-along gate
 
-Run the full pipeline:
+Skill is "done" when the next plate (after CG) runs clean in ≤2 iterations. If iter 3 still has layout issues on a non-CG plate, the skill needs another refinement pass before it's considered self-driving.
+
+## Phase 3: Final export
+
+Run full pipeline:
 ```bash
-uv run poe generate-asm
+uv run poe generate-plate-{id}            # commercial
+uv run poe generate-plate-{id}-defense    # defense (if added)
 ```
 
-This produces:
-- `output/drawings/l_bracket.pdf` — full drawing with dimensions
-- `output/drawings/l_bracket.dxf` — DXF with dimension entities
-- `output/drawings/l_bracket_sheet.svg` — intermediate SVG
+Produces:
+- `output/drawings/{ID}_drawing.pdf` — full drawing with dims
+- `output/drawings/{ID}.dxf` — DXF with dim entities
 
-Do NOT run `poe generate-asm` during the review loop — it rebuilds views from scratch. Only run `dimensions.py` directly during iteration.
+Per-context drawings emit separately: `plate.dxf`/`plate.pdf` for commercial, `plate-defense.dxf`/`plate-defense.pdf` for defense (no alt-note hedging — each drawing is unambiguous).
 
-## Reference: TechDraw Dimension API
+## Iteration order
+
+CG → BG-AC → BG-DC → CD. AC before DC surfaces parametric differences before DC isolation callouts.
+
+## Compounding learnings (filled in as plates converge)
+
+### CG (commercial) — pending
+
+[Edge map / layout offsets / gotchas to be filled after first clean iteration]
+
+### CG (defense) — pending
+
+### BG-AC — pending
+
+### BG-DC — pending
+
+### CD — pending
+
+## Reference: TechDraw dimension API
 
 ```python
 import TechDraw
 
-# Distance dimension between two edges
-dim = doc.addObject("TechDraw::DrawViewDimension", "DimHeight")
-dim.Type = "DistanceY"
-dim.References2D = [(view, "Edge5")]  # or two edges for between-edges
+# DistanceX/Y — for outer + ordinate position dims
+dim = doc.addObject("TechDraw::DrawViewDimension", "DimWidth")
+dim.Type = "DistanceX"
+dim.References2D = [(view, "Edge5")]
 dim.FormatSpec = "%.0f"
 page.addView(dim)
+dim.X = 0  # set position AFTER addView
+dim.Y = -long/2 - 30
 
-# Diameter dimension on a circle
+# Diameter on a circle — penetration or bolt
 dim = doc.addObject("TechDraw::DrawViewDimension", "DimHole")
 dim.Type = "Diameter"
 dim.References2D = [(view, "Edge11")]
-dim.FormatSpec = "⌀%.1f H9"
-page.addView(dim)
-
-# Radius dimension on an arc
-dim = doc.addObject("TechDraw::DrawViewDimension", "DimFillet")
-dim.Type = "Radius"
-dim.References2D = [(view, "Edge1")]
-dim.FormatSpec = "R%.0f"
+dim.FormatSpec = "⌀%.1f H10"
+dim.OverTolerance = 0.120
+dim.UnderTolerance = 0.0
 page.addView(dim)
 ```
 
-## Reference: ISO 2768-m General Tolerances
+## Reference: per-spec dim mapping
 
-| Nominal range (mm) | Tolerance (±mm) |
-|---------------------|-----------------|
-| 0.5–3 | ±0.1 |
-| 3–6 | ±0.1 |
-| 6–30 | ±0.2 |
-| 30–120 | ±0.3 |
-| 120–400 | ±0.5 |
+Map from `spec.yaml` → drawing dims:
 
-## Reference: For 3D Printed Parts (PA12 MJF)
+| spec.yaml key | Dim | View | Tolerance |
+|---|---|---|---|
+| `outer_dims_mm.W` | DistanceX outer | TOP | ISO 2768-m |
+| `outer_dims_mm.L` | DistanceY outer | TOP | ISO 2768-m |
+| `deployment_contexts.{ctx}.thickness_mm` | DistanceY thickness | FRONT | ISO 2768-m |
+| `mounting_bolts.diameter_mm` | Diameter on bolt circle | TOP | H9 |
+| `mounting_bolts.slot_length_mm` | Distance slot length | TOP + DETAIL | ISO 2768-m |
+| `penetration_schedule[*].x_mm` | DistanceX position | TOP | ISO 2768-m |
+| `penetration_schedule[*].y_mm` | DistanceY position | TOP | ISO 2768-m |
+| `_resolve_diameter(pen, params, ctx)` | Diameter on pen circle | TOP | H10 (or special tap callout for ground_stud) |
 
-- ISO 2768-c (coarse) or -v (very coarse) more realistic than -m
-- Focus dimensions on functional features only (mating surfaces, hole positions)
-- Surface finish callouts not applicable — finish is process-dependent
-- Still need all critical dimensions for inspection
-- Consider noting "As-printed" surface finish in title block
+## Reference: dim positioning offsets (starting point)
 
-## Layout Spec Tolerance Fields
+For an A3 landscape sheet (420 × 297mm, title block 58mm at bottom):
+- TOP view center: (110, 180)
+- FRONT view center: (320, 235)
+- ISO view center: (320, 130)
+- DETAIL view center: (340, 50)
+- Notes block: (-180, -100) [left side]
+- Title block: bottom-right (auto-placed by template)
 
-```yaml
-tolerances:
-  general: "ISO 2768-m"
-  holes:
-    fit_class: "H9"
-    over_tolerance: 0.036
-    under_tolerance: 0.0
-  bolt_spacing:
-    tolerance: 0.1
-  surface_finish: "As-printed (HP MJF)"
-```
+Outer dim offsets (TOP view):
+- Width dim: y = -L/2 - 30 (below view)
+- Length dim: x = -W/2 - 30 (left of view)
+- Position ordinate stack: x = +W/2 + 30 + 8*i (right side, 8mm spacing)
+
+Adjust during Phase 2 visual review; whatever values converge become defaults here.
