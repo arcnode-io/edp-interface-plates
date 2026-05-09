@@ -9,7 +9,7 @@ import pytest
 from sim.cg.constants import (
     BOLT_CLEARANCE_RADIAL,
     BOLT_DIAMETER,
-    CORNER_SLOT_LENGTH,
+    SLOT_LENGTH,
     EXPECTED_JOINT_TEMP_RISE,
     EXPECTED_JOINT_TEMP_RISE_REL_TOL,
     EXPECTED_THERMAL_OFFSET,
@@ -67,17 +67,15 @@ class TestCGPlate:
         # assert
         assert actual_mm < clearance_mm
 
-    def test_corner_slot_accommodates_thermal_offset(self) -> None:
-        """Adopted Option 1: radial slot at corners absorbs thermal offset.
+    def test_slot_accommodates_thermal_offset(self) -> None:
+        """Adopted Option 1: radial slots at corners + long-axis midpoints.
 
         Slot extends ±(slot_length - hole_diameter)/2 beyond the hole center
         on each side. That radial extra must cover the worst-case sum of
         thermal offset + fab tolerance + safety margin.
         """
         # arrange
-        slot_radial_extra_mm = (
-            ((CORNER_SLOT_LENGTH - BOLT_DIAMETER) / 2).to(ureg.mm).magnitude
-        )
+        slot_radial_extra_mm = ((SLOT_LENGTH - BOLT_DIAMETER) / 2).to(ureg.mm).magnitude
         fab_tol_mm = FAB_TOLERANCE.to(ureg.mm).magnitude
         margin_mm = SAFETY_MARGIN.to(ureg.mm).magnitude
         # act

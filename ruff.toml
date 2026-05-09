@@ -40,6 +40,12 @@ ignore = [
 
     # Ambiguous variable names: I, l are standard math/engineering symbols
     "E741",
+
+    # Greek letters in comments are math notation, not ambiguity bugs
+    # (α, β, σ, δ, ρ, μ, π, etc. are standard engineering symbols)
+    "RUF001",   # ambiguous unicode in strings
+    "RUF002",   # ambiguous unicode in docstrings
+    "RUF003",   # ambiguous unicode in comments
 ]
 
 [lint.pylint]

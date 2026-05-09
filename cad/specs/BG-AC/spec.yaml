@@ -97,14 +97,15 @@ default_params:
   revision: "001"
 
 # Same 8-bolt perimeter pattern as CG — receiver frame on container end
-# wall is identical across plate variants for fab simplicity. Corners
-# slotted radially per Option 1 thermal mitigation (see CG spec / theory.ipynb).
+# wall is identical across plate variants for fab simplicity. Corners +
+# long-axis midpoints slotted radially per Option 1 thermal mitigation
+# (see CG spec / theory.ipynb).
 mounting_bolts:
   count: 8
   inset_mm: 60
   diameter_mm: 11   # M10 clearance hole
   pattern: corners_and_edge_midpoints
-  corner_slot_length_mm: 13
+  slot_length_mm: 13
 
 provenance:
   authored_by: human

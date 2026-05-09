@@ -56,12 +56,16 @@ R_JOINT_PER_BOLT: Final = ufloat(125, 75) * ureg.microohm
 T_AMBIENT_FAULT_C: Final = 25.0
 DELTA_T_OPERATING: Final = 85.0 * ureg.kelvin  # -25 to +60 °C swing
 
-# --- Corner-slot mitigation (per Option 1, theory.ipynb design-risk cell) ---
-# Slot length = D_hole + 2*(thermal_offset + fab_tol + margin)
-#             = 11 + 2*(0.449 + 0.1 + 0.2) = 12.5 → 13mm (rounded up)
+# --- Slotted-bolt mitigation (per Option 1, theory.ipynb design-risk cell) ---
+# Slot length sized for worst-case slotted bolt (corner @ 0.449mm offset):
+#   D_hole + 2*(thermal_offset + fab_tol + margin) = 11 + 2*(0.449 + 0.1 + 0.2)
+#   = 12.5 → 13mm (rounded up). Same slot covers long-axis midpoints
+#   (0.364mm offset → 0.664mm budget < 1.0mm slot extra per side).
+# Short-axis midpoints stay round (0.263mm offset, 0.137mm net margin after
+# fab tol — comfortable).
 FAB_TOLERANCE: Final = 0.1 * ureg.mm  # ISO 2768-m hole position
 SAFETY_MARGIN: Final = 0.2 * ureg.mm  # engineering buffer
-CORNER_SLOT_LENGTH: Final = 13.0 * ureg.mm
+SLOT_LENGTH: Final = 13.0 * ureg.mm
 
 # --- Verdict thresholds ---
 JOINT_TEMP_THRESHOLD_C: Final = 150.0  # 6061-T6 yield derating point
