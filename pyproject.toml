@@ -38,7 +38,10 @@ build-cg = { cmd = "python cad/model/build.py --plate-id CG", env = { PYTHONPATH
 build-bg-ac = { cmd = "python cad/model/build.py --plate-id BG-AC", env = { PYTHONPATH = "." } }
 build-bg-dc = { cmd = "python cad/model/build.py --plate-id BG-DC", env = { PYTHONPATH = "." } }
 build-cd = { cmd = "python cad/model/build.py --plate-id CD", env = { PYTHONPATH = "." } }
+build-defense = { cmd = "python cad/model/build.py --all --deployment-context defense_forward", env = { PYTHONPATH = "." } }
+build-all = ["build", "build-defense", "draw", "draw-defense"]
 draw = { cmd = "python cad/drawing/build.py --all", env = { PYTHONPATH = "." } }
+draw-defense = { cmd = "python cad/drawing/build.py --all --deployment-context defense_forward", env = { PYTHONPATH = "." } }
 inspect-cg = "bash -c 'nohup freecad cad/specs/CG/plate.step &>/dev/null &'"
 inspect-bg-ac = "bash -c 'nohup freecad cad/specs/BG-AC/plate.step &>/dev/null &'"
 inspect-bg-dc = "bash -c 'nohup freecad cad/specs/BG-DC/plate.step &>/dev/null &'"

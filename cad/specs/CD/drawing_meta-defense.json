@@ -1,0 +1,29 @@
+{
+  "part_number": "ARC-PLT-CD-001-D",
+  "description": "Interface Plate, Compute-to-Drycooler",
+  "revision": "001",
+  "deployment_context": "defense_forward",
+  "material": "5083-H116 marine grade (ASTM B209)",
+  "finish": "Type III hard anodize 40-60 \u03bcm",
+  "thickness_mm": 10.0,
+  "ip_rating": "IP65",
+  "fasteners": "316 SS M10 (ASTM F593 G2)",
+  "ground_stud": "M12",
+  "outer_dims_mm": {
+    "L": 840.0,
+    "W": 640.0
+  },
+  "general_tolerance": "ISO 2768-m",
+  "build_params": {
+    "power_conduit_od_mm": 75.0,
+    "data_conduit_od_mm": 35.0,
+    "data_conduit_count": 1
+  },
+  "drawing_pipeline_status": "v1_minimal",
+  "deferred": [
+    "GD&T tolerance callouts on penetration positions",
+    "Datum reference frame + ASME Y14.5 symbols",
+    "Surface finish callouts",
+    "Integrated PDF composition with title block template"
+  ]
+}

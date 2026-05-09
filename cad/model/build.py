@@ -41,9 +41,16 @@ def spec_path_for(plate_id: str) -> Path:
     return SPECS_DIR / plate_id / "spec.yaml"
 
 
-def step_path_for(plate_id: str) -> Path:
-    """Return cad/specs/{plate_id}/plate.step."""
-    return SPECS_DIR / plate_id / "plate.step"
+def step_path_for(plate_id: str, deployment_context: str = "commercial") -> Path:
+    """Return cad/specs/{plate_id}/plate{-defense}.step.
+
+    Commercial → plate.step (unchanged).
+    defense_forward / sovereign_government → plate-defense.step (suffix used
+    for both DoD contexts; spec.yaml deployment_contexts table currently has
+    them identical, so the artifact is shared).
+    """
+    suffix = "" if deployment_context == "commercial" else "-defense"
+    return SPECS_DIR / plate_id / f"plate{suffix}.step"
 
 
 def load_plate_spec(plate_id: str) -> PlateSpec:
@@ -73,9 +80,11 @@ def build_for(
     return build_plate(params, spec)
 
 
-def export_step(plate: cq.Workplane, plate_id: str) -> Path:
-    """Export plate to cad/specs/{plate_id}/plate.step."""
-    out = step_path_for(plate_id)
+def export_step(
+    plate: cq.Workplane, plate_id: str, deployment_context: str = "commercial"
+) -> Path:
+    """Export plate STEP keyed by deployment context."""
+    out = step_path_for(plate_id, deployment_context)
     cq.exporters.export(plate, str(out))
     return out
 
@@ -98,14 +107,15 @@ def main() -> None:
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     targets = PLATE_IDS if args.all else (args.plate_id,)
+    context = args.deployment_context or "commercial"
     for pid in targets:
         spec = load_plate_spec(pid)
         params = default_params_for(spec)
         if args.deployment_context is not None:
             params = replace(params, deployment_context=args.deployment_context)
         plate = build_for(pid, params=params, spec=spec)
-        out = export_step(plate, pid)
-        logger.info(f"  → {pid}: {out.relative_to(REPO_ROOT)}")
+        out = export_step(plate, pid, deployment_context=context)
+        logger.info(f"  → {pid} ({context}): {out.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

@@ -117,6 +117,18 @@ def test_step_path_returns_inside_specs_dir(plate_id: str) -> None:
     assert path.parent.name == plate_id
 
 
+def test_step_path_for_defense_uses_suffixed_filename(plate_id: str) -> None:
+    # arrange / act
+    commercial = step_path_for(plate_id, "commercial")
+    defense = step_path_for(plate_id, "defense_forward")
+    sovereign = step_path_for(plate_id, "sovereign_government")
+    # assert — defense + sovereign share the -defense suffix; commercial unchanged
+    assert commercial.name == "plate.step"
+    assert defense.name == "plate-defense.step"
+    assert sovereign.name == "plate-defense.step"
+    assert defense.parent == commercial.parent
+
+
 # --- Plate-specific invariants (one per plate) ---
 
 
