@@ -8,12 +8,16 @@ import pytest
 
 from sim.cg.constants import (
     BOLT_CLEARANCE_RADIAL,
+    BOLT_DIAMETER,
+    CORNER_SLOT_LENGTH,
     EXPECTED_JOINT_TEMP_RISE,
     EXPECTED_JOINT_TEMP_RISE_REL_TOL,
     EXPECTED_THERMAL_OFFSET,
     EXPECTED_THERMAL_OFFSET_REL_TOL,
+    FAB_TOLERANCE,
     JOINT_TEMP_THRESHOLD_C,
     PATTERN_DIAGONAL,
+    SAFETY_MARGIN,
     T_AMBIENT_FAULT_C,
     ureg,
 )
@@ -63,22 +67,27 @@ class TestCGPlate:
         # assert
         assert actual_mm < clearance_mm
 
-    def test_thermal_margin_is_tight(self) -> None:
-        """Pin the design risk: commercial CG has razor-thin thermal margin.
+    def test_corner_slot_accommodates_thermal_offset(self) -> None:
+        """Adopted Option 1: radial slot at corners absorbs thermal offset.
 
-        Real fab tolerance (±0.1mm per ISO 2768-m) consumes most of this
-        margin. Future revisions should slot corner bolt holes or specify
-        tighter tolerance.
+        Slot extends ±(slot_length - hole_diameter)/2 beyond the hole center
+        on each side. That radial extra must cover the worst-case sum of
+        thermal offset + fab tolerance + safety margin.
         """
         # arrange
-        clearance_mm = BOLT_CLEARANCE_RADIAL.to(ureg.mm).magnitude
+        slot_radial_extra_mm = (
+            ((CORNER_SLOT_LENGTH - BOLT_DIAMETER) / 2).to(ureg.mm).magnitude
+        )
+        fab_tol_mm = FAB_TOLERANCE.to(ureg.mm).magnitude
+        margin_mm = SAFETY_MARGIN.to(ureg.mm).magnitude
         # act
         offset_mm = solve().thermal_offset.to(ureg.mm).magnitude
-        margin_mm = clearance_mm - offset_mm
-        # assert — margin must be positive but is intentionally < 100 µm to
-        # capture the design risk we surfaced via theory.
-        assert margin_mm > 0
-        assert margin_mm < 0.1
+        # assert — slot extra must cover offset + fab + safety margin per side
+        budget_per_side_mm = offset_mm + fab_tol_mm + margin_mm
+        assert slot_radial_extra_mm >= budget_per_side_mm, (
+            f"slot radial extra {slot_radial_extra_mm:.2f}mm < "
+            f"required budget {budget_per_side_mm:.2f}mm"
+        )
 
     def test_pattern_diagonal_matches_geometry(self) -> None:
         """Sanity: pattern diagonal derived from PATTERN_W + PATTERN_L."""

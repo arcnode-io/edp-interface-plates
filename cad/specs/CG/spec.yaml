@@ -93,11 +93,15 @@ default_params:
 # frame geometry on container end wall. 8 bolts: 4 corners + 4 edge midpoints,
 # 60mm inset from plate edges. Sufficient for IP55 face seal at this plate
 # size; defense IP65 keeps same pattern, EPDM secondary seal handles delta.
+# Corners are slotted radially per Option 1 thermal mitigation (theory.ipynb
+# design-risk cell): 13mm slot accommodates 0.449mm differential expansion
+# (6061 vs A36, ΔT=85K) + ISO 2768-m fab tol + 0.2mm safety margin.
 mounting_bolts:
   count: 8
   inset_mm: 60
   diameter_mm: 11   # M10 clearance hole
   pattern: corners_and_edge_midpoints
+  corner_slot_length_mm: 13
 
 provenance:
   authored_by: human

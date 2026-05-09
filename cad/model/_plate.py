@@ -63,6 +63,11 @@ class MountingBolts(BaseModel):
     inset_mm: float
     diameter_mm: float
     pattern: str
+    # Reason: Option 1 thermal mitigation — slot the 4 corner holes radially so
+    # the bolt rides along the plate's expansion/contraction axis. None means
+    # all 8 holes are round (legacy). 13mm = 11mm hole + 2mm radial extra at
+    # each side, covering 0.449mm thermal + 0.1mm fab tol + 0.2mm safety margin.
+    corner_slot_length_mm: float | None = None
 
 
 class DefaultParams(BaseModel):
@@ -170,22 +175,50 @@ def _resolve_penetration_diameter(
 def _cut_mounting_bolts(
     plate: cq.Workplane, bolts: MountingBolts, long_dim: float, wide_dim: float
 ) -> cq.Workplane:
-    """Cut bolt holes per mounting_bolts.pattern."""
+    """Cut bolt holes per mounting_bolts.pattern.
+
+    Corner positions get radial slots (long axis pointing toward pattern center)
+    when corner_slot_length_mm is set; edge midpoints stay round.
+    """
+    import math
+
     if bolts.pattern != "corners_and_edge_midpoints":
         raise ValueError(f"Unsupported mounting pattern: {bolts.pattern}")
 
     x_outer = wide_dim / 2 - bolts.inset_mm
     y_outer = long_dim / 2 - bolts.inset_mm
-    positions = [
+    corners = [
         (-x_outer, -y_outer),
         (x_outer, -y_outer),
         (-x_outer, y_outer),
         (x_outer, y_outer),
+    ]
+    midpoints = [
         (0, -y_outer),
         (0, y_outer),
         (-x_outer, 0),
         (x_outer, 0),
     ]
-    for x, y in positions:
+
+    for x, y in midpoints:
         plate = plate.faces(">Z").workplane().center(x, y).hole(bolts.diameter_mm)
+
+    if bolts.corner_slot_length_mm is None:
+        # Legacy round-hole geometry; preserved for backward compat.
+        for x, y in corners:
+            plate = plate.faces(">Z").workplane().center(x, y).hole(bolts.diameter_mm)
+        return plate
+
+    for x, y in corners:
+        # Slot's long axis points toward (0,0) — atan2 gives angle of the radial
+        # vector from center to corner; slot2D's `angle` rotates the slot's long
+        # axis from default +X by that amount, which lands it along the radial.
+        angle_deg = math.degrees(math.atan2(y, x))
+        plate = (
+            plate.faces(">Z")
+            .workplane()
+            .center(x, y)
+            .slot2D(bolts.corner_slot_length_mm, bolts.diameter_mm, angle=angle_deg)
+            .cutThruAll()
+        )
     return plate

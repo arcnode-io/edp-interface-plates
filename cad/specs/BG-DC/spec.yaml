@@ -103,11 +103,13 @@ default_params:
 
 # Same 8-bolt perimeter pattern as BG-AC — receiver frame on grid container
 # +X end wall is identical across BG-* plate variants for fab simplicity.
+# Corners slotted radially per Option 1 thermal mitigation (see CG spec).
 mounting_bolts:
   count: 8
   inset_mm: 60
   diameter_mm: 11
   pattern: corners_and_edge_midpoints
+  corner_slot_length_mm: 13
 
 provenance:
   authored_by: human
