@@ -35,8 +35,10 @@ class StructuralResult:
     thermal_offset: pint.Quantity
 
 
-def solve() -> StructuralResult:
+def solve(delta_t: pint.Quantity | None = None) -> StructuralResult:
     """Compute joint temp rise + thermal offset for BG-AC plate."""
+    if delta_t is None:
+        delta_t = DELTA_T_OPERATING
     n_eff = BOLT_COUNT / 2
     i_worst = (
         FAULT_CURRENT.magnitude.nominal_value + FAULT_CURRENT.magnitude.std_dev
@@ -62,7 +64,7 @@ def solve() -> StructuralResult:
     pattern_w = PLATE_WIDTH - 2 * BOLT_INSET
     pattern_l = PLATE_LENGTH - 2 * BOLT_INSET
     diagonal = (pattern_w**2 + pattern_l**2) ** 0.5
-    delta_diagonal = (delta_alpha * diagonal * DELTA_T_OPERATING).to(ureg.mm)
+    delta_diagonal = (delta_alpha * diagonal * delta_t).to(ureg.mm)
     offset = delta_diagonal / 2
 
     return StructuralResult(joint_temp_rise=temp_rise, thermal_offset=offset)

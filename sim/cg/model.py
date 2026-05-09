@@ -40,12 +40,18 @@ class StructuralResult:
     thermal_offset: pint.Quantity  # mm corner-bolt radial offset at full deltaT
 
 
-def solve() -> StructuralResult:
+def solve(delta_t: pint.Quantity | None = None) -> StructuralResult:
     """Compute joint temp rise + thermal offset (worst-case envelope).
+
+    Args:
+        delta_t: Operating temperature range. Defaults to DELTA_T_OPERATING
+            (commercial, 85 K). Pass DELTA_T_DEFENSE (111 K) for defense.
 
     Returns:
         StructuralResult with both load case outputs in pint units.
     """
+    if delta_t is None:
+        delta_t = DELTA_T_OPERATING
     # --- Fault current heating (adiabatic, 5-cycle) ---
     # Conservative: half the bolts (4 closest to ground stud) carry the fault.
     n_eff = BOLT_COUNT / 2
@@ -81,7 +87,7 @@ def solve() -> StructuralResult:
     pattern_l = PLATE_LENGTH - 2 * BOLT_INSET
     diagonal = (pattern_w**2 + pattern_l**2) ** 0.5
 
-    delta_diagonal = (delta_alpha * diagonal * DELTA_T_OPERATING).to(ureg.mm)
+    delta_diagonal = (delta_alpha * diagonal * delta_t).to(ureg.mm)
     offset = delta_diagonal / 2
 
     return StructuralResult(joint_temp_rise=temp_rise, thermal_offset=offset)
