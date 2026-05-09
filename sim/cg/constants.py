@@ -55,6 +55,8 @@ R_JOINT_PER_BOLT: Final = ufloat(125, 75) * ureg.microohm
 # --- Operating temperature range (commercial deployment) ---
 T_AMBIENT_FAULT_C: Final = 25.0
 DELTA_T_OPERATING: Final = 85.0 * ureg.kelvin  # -25 to +60 °C swing
+# Defense forward operating range per MIL-STD-810H typical: -40 to +71 °C.
+DELTA_T_DEFENSE: Final = 111.0 * ureg.kelvin
 
 # --- Slotted-bolt mitigation (per Option 1, theory.ipynb design-risk cell) ---
 # Slot length sized for worst-case slotted bolt (corner @ 0.449mm offset):

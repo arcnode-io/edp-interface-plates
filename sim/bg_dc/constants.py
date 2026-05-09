@@ -56,6 +56,8 @@ R_JOINT_PER_BOLT: Final = ufloat(125, 75) * ureg.microohm
 # --- Operating temperature range ---
 T_AMBIENT_FAULT_C: Final = 25.0
 DELTA_T_OPERATING: Final = 85.0 * ureg.kelvin
+# Defense forward operating range per MIL-STD-810H typical: -40 to +71 °C.
+DELTA_T_DEFENSE: Final = 111.0 * ureg.kelvin
 
 # --- Verdict thresholds (same as every plate) ---
 JOINT_TEMP_THRESHOLD_C: Final = 150.0
