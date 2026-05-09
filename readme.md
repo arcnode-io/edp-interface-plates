@@ -41,7 +41,7 @@ Variant codes follow `[Container A][Container B]-[Coupling]-[String/Port Count]`
 | Variant | Used When | Carries | Plate Codes |
 |---|---|---|---|
 | **BG-AC** | External BESS lands AC at grid container (Tesla Megapack, Tesla Megablock, CATL EnerOne with integrated PCS) | AC feeder, grounding, data | `BG-AC` (conduit sized from BESS AC interconnect spec) |
-| **BG-DC** | External BESS lands DC at grid container; PCS lives in grid container (CATL EnerOne, external PCS) | DC bus, grounding, data | `BG-DC-2`, `BG-DC-4`, `BG-DC-8` (per BESS string count) |
+| **BG-DC** | External BESS lands DC at grid container; PCS lives in grid container (CATL EnerOne, external PCS) | DC bus, grounding, data | `BG-DC` (single parametric variant, DC bus OD sized from aggregate string current per ADR-011) |
 | **CG** | All deployments | AC feeder (415Y/240V) + data | `CG` (fixed, conduit sized from sizing engine Module F) |
 | **CD** | All deployments (1:1 Compute:Drycooler) | Coolant supply/return + drycooler comms (VFD Modbus, fan tach, leak sensor) | `CD` (2" QD class, 200 LPM @ 5 K secondary loop ΔT) |
 
@@ -67,12 +67,12 @@ For every plate variant required by a deployment, the implementation outputs:
 2. **BOM line item** — structured JSON referencing the drawing:
    ```json
    {
-     "part_number": "ARC-PLT-BG-DC-4-001",
+     "part_number": "ARC-PLT-BG-DC-001",
      "description": "Interface Plate, BESS-to-Grid DC-Coupled, 4-String",
      "qty": 1,
      "material": "6061-T6 aluminum",
      "finish": "Type II anodize",
-     "drawing_ref": "ARC-PLT-BG-DC-4-001.dxf",
+     "drawing_ref": "ARC-PLT-BG-DC-001.dxf",
      "type": "custom_fabrication"
    }
    ```
@@ -85,14 +85,12 @@ ARC - PLT - [VARIANT CODE] - [REVISION]
 
 Examples:
   ARC-PLT-BG-AC-001       BESS-Grid, AC-coupled
-  ARC-PLT-BG-DC-2-001     BESS-Grid, DC-coupled, 2-String
-  ARC-PLT-BG-DC-4-001     BESS-Grid, DC-coupled, 4-String
-  ARC-PLT-BG-DC-8-001     BESS-Grid, DC-coupled, 8-String
+  ARC-PLT-BG-DC-001       BESS-Grid, DC-coupled (single parametric variant)
   ARC-PLT-CG-001          Compute-Grid
   ARC-PLT-CD-001          Compute-Drycooler
 
 Defense variants append `-D`:
-  ARC-PLT-BG-DC-4-001-D
+  ARC-PLT-BG-DC-001-D
 ```
 
 ## Toolchain
