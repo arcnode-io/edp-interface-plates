@@ -229,17 +229,96 @@ CG → BG-AC → BG-DC → CD. AC before DC surfaces parametric differences befo
 
 ## Compounding learnings (filled in as plates converge)
 
-### CG (commercial) — pending
+### CG (commercial) — converged 2026-05-09 (iter 17)
 
-[Edge map / layout offsets / gotchas to be filled after first clean iteration]
+**Edge map worked:** `_find_circles_by_radius(view, target_r)` with `target_scaled = target_r * scale` matches reliably. View `ScaleType="Custom"` is REQUIRED — default `"Page"` ignores `view.Scale` and breaks length matching.
 
-### CG (defense) — pending
+**Sheet:** A1 landscape (841 × 594mm). A3 too tight for 4 views + dims + notes.
 
-### BG-AC — pending
+**View positions on A1:**
+- TOP: (220, 320) — left half
+- FRONT: (600, 480) — top-right thickness sliver
+- ISO: (620, 300) — mid-right
+- ISO scale = 0.6 × main scale (so it fits in remaining space)
 
-### BG-DC — pending
+**View source order matters:** set `v.Source / v.Direction / v.ScaleType / v.Scale` BEFORE `page.addView(v)`. Adding view first makes HLR initialize with empty source → only ~13 edges visible later instead of full ~30+.
 
-### CD — pending
+**Dim placement gotcha (THE big one):**
+
+`DrawViewDimension.X / .Y` is OFFSET from default placement. **Default is the VIEW CENTER, not the feature.** So `X=Y=0` puts ALL dim text at the view center → texts pile, leaders fan out radially (long arrows).
+
+For short arrows + non-piling text:
+```python
+# Set X/Y ≈ feature's view-relative position, plus small bump in clear direction.
+# Page Y axis points UP (model +y → page +y, no inversion).
+feat_x = pen.x_mm * scale
+feat_y = pen.y_mm * scale
+bump = max(30.0, radius * scale + 30.0)  # text-center clears hole edge + half text width
+dim.X = feat_x + bump   # bump direction picks the clear quadrant
+dim.Y = feat_y + bump
+```
+
+For bolt callout (8X TYP), can't pick a target bolt by position because they all match radius. Read matched edge's curve center directly:
+```python
+matched_edge = view.getVisibleEdges()[int(longest[4:])]
+center = matched_edge.Curve.Center  # already in render-space
+dim.X = center.x + bolt_radius * scale + 25.0
+dim.Y = center.y + bolt_radius * scale + 25.0
+```
+
+**Bump direction per pen quadrant:** check if the bump puts text on top of an unrelated feature (e.g. SW bump from a BL ground stud collides with the BL corner bolt). Flip direction toward plate interior in that case.
+
+**Outer dim placement:** position OUTSIDE plate body so text lands in margin:
+```python
+half_w = wide_dim / 2 * scale
+half_h = long_dim / 2 * scale
+DimWidth (DistanceX): X=0,            Y=-half_h - 25  # below plate
+DimHeight (DistanceY): X=half_w + 25, Y=0             # right of plate
+```
+
+**Annotation placement (Notes / SlotNote / view labels):** these are page-absolute mm and **center-anchored on text**. Notes block at X=120 (not 50) so 80mm-wide text doesn't clip past sheet edge.
+
+**cadquery `.center()` accumulates** — never use it in a chained loop. Use `.pushPoints([(x, y)])` for absolute positioning. (Bit us hard: penetrations got drilled at wrong positions because `.center()` accumulated the offset across the loop.)
+
+**Iteration count:** converged at iter 17. Most iters were chasing the dim-placement-default mystery before identifying view-center default. Once that was understood, 3 more iters to dial bumps + flip ground stud direction.
+
+### CG (defense) — converged with commercial pipeline (no extra iters)
+
+Defense path = same code, `--deployment-context defense_forward`. Picks `plate-defense.step` + appends `-D` to part number + adds note 6 (EPDM seal MIL-DTL-XXXX placeholder, flagged "[SPEC TBD]").
+
+### BG-AC / BG-DC / CD — converged 2026-05-09 (zero per-plate iters needed)
+
+Once skill knew the universal rules, BG-AC/BG-DC/CD produced clean drawings on first run. Confirms chug-along gate.
+
+**Pen-id agnostic dim placement (key for multi-pen-per-quadrant plates):**
+
+BG-AC has `power_conduit_left` / `power_conduit_right` (mirrored at Y=200, X=±150). Hardcoding bumps per-id ("if pen.id == 'power_conduit'") fails for these. Use position-driven rule instead:
+
+```python
+if pen["id"] == "ground_stud":
+    sx, sy = 1.0, 1.0  # NE override (clears typical BL corner bolt)
+else:
+    sx = 1.0 if feat_x >= 0 else -1.0   # X outward → mirrored pairs diverge
+    sy = -1.0 if feat_y > 0 else (1.0 if feat_y < 0 else -1.0)  # Y toward center
+```
+
+Outward X bump diverges mirrored pairs cleanly. Inward Y bump keeps text inside plate body (not in narrow top/bottom margin where corner bolts sit).
+
+**Position block in margin, NOT on plate face:**
+
+Consolidated text annotation listing all penetration + bolt positions ("FROM DATUM B/C") goes in the **bottom-center page margin** (X=470, Y=70 on A1) — between DETAIL view and title block. Earlier attempts on the plate body (X=120, Y=240 / Y=420) collide with features depending on plate variant. The margin spot is universal and clear.
+
+**Title block field names (gotcha):**
+
+A1_Landscape_EWAI.svg uses `identification_number` for the drawing-number field, **not** `drawing_number`. Setting the wrong key silently leaves the placeholder "DN" in the rendered output.
+
+**Slot length dim removal:**
+
+DETAIL view's slot side line measures `slot_length - bolt_diameter` = 2mm (not the 13mm total length). TechDraw FormatSpec doesn't do arithmetic, can't add bolt_diameter back. Solution: drop the buggy dim; carry "13×Ø11 H9" via the slot_note (right-of-TOP) and TYP block under DETAIL. Keep DimSlotWidth (Ø11 H9 ± 0.04) — that one measures correctly.
+
+**TechDraw circle-circle DistanceX/Y is NOT center-to-center:**
+
+Empirical: dimming X distance between penetration circle and a "datum bolt" (long-axis-midpoint at x=0) gave values 9-26mm off from spec. TechDraw appears to use tangent-based measurement for circle pairs. No reliable workaround without cosmetic-vertex API. Position block carries spec-exact text instead — correct value, just no measured leader.
 
 ## Reference: TechDraw dimension API
 

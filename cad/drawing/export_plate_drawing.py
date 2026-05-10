@@ -74,24 +74,29 @@ def _resolve_diameter(pen: dict, params: dict, ctx: dict) -> float:
     return 0.0
 
 
-def export_plate_drawing(plate_id: str) -> Path:
+def export_plate_drawing(plate_id: str, deployment_context: str = "commercial") -> Path:
     """Build TechDraw page for the named plate and export as PDF.
 
     Args:
         plate_id: Plate variant code, e.g. "CG", "BG-AC".
+        deployment_context: "commercial" or "defense_forward" / "sovereign_government";
+            picks plate-defense.step + appends "-D" to part number + flips notes.
 
     Returns:
         Path to emitted PDF.
     """
     spec = _load_plate_spec(plate_id)
-    params = spec["default_params"]
+    params = dict(spec["default_params"])
+    params["deployment_context"] = deployment_context
 
     DRAWINGS_DIR.mkdir(parents=True, exist_ok=True)
-    step_path = REPO_ROOT / "cad" / "specs" / plate_id / "plate.step"
+    step_suffix = "" if deployment_context == "commercial" else "-defense"
+    step_path = REPO_ROOT / "cad" / "specs" / plate_id / f"plate{step_suffix}.step"
     if not step_path.exists():
         raise FileNotFoundError(
             f"plate STEP not found at {step_path}; "
-            f"run `python cad/model/build.py --plate-id {plate_id}` first"
+            f"run `python cad/model/build.py --plate-id {plate_id} "
+            f"--deployment-context {deployment_context}` first"
         )
 
     # Reason: A1 (841×594mm) gives ~2× the layout headroom of A3. Easier
@@ -121,7 +126,7 @@ def export_plate_drawing(plate_id: str) -> Path:
             "creator": "ARCNODE",
             "document_type": "Fab Drawing",
             "approval_person": "Joe Narvaez, EIT",
-            "drawing_number": pn,
+            "identification_number": pn,
             "part_material": ctx["material"],
             "revision_index": params["revision"],
             "legal_owner_1": "ARCNODE",
@@ -172,18 +177,35 @@ def export_plate_drawing(plate_id: str) -> Path:
     _wait_for_gui(10)
 
     from cad.drawing.plate_dimensions import (
+        add_detail_view,
         add_notes_block,
         add_plate_dimensions,
         add_thickness_dimension,
         add_view_labels,
     )
 
-    dim_names = add_plate_dimensions(doc, page, face, spec, params)
+    dim_names = add_plate_dimensions(
+        doc, page, face, spec, params, view_cx=face_cx, view_cy=face_cy
+    )
     front_view = view_objects.get("FRONT")
     if front_view is not None:
         thick_name = add_thickness_dimension(doc, page, front_view, spec, params)
         if thick_name:
             dim_names.append(thick_name)
+    # DETAIL view at top-right corner slot (model coords).
+    bolts_spec = spec["mounting_bolts"]
+    inset = bolts_spec["inset_mm"]
+    detail_anchor_x = bb.XLength / 2 - inset
+    detail_anchor_y = bb.YLength / 2 - inset
+    _detail_view, detail_dims = add_detail_view(
+        doc,
+        page,
+        face,
+        spec,
+        anchor_x=detail_anchor_x,
+        anchor_y=detail_anchor_y,
+    )
+    dim_names.extend(detail_dims)
     notes_name = add_notes_block(doc, page, params)
     dim_names.append(notes_name)
     label_positions = {name: (cx, cy - 50) for name, _direction, cx, cy in view_specs}
@@ -194,9 +216,10 @@ def export_plate_drawing(plate_id: str) -> Path:
     page.ViewObject.doubleClicked()
     _wait_for_gui(15)
 
-    svg_path = Path(f"/tmp/{plate_id}_sheet.svg")
-    pdf_path = DRAWINGS_DIR / f"{plate_id}_drawing.pdf"
-    dxf_path = DRAWINGS_DIR / f"{plate_id}.dxf"
+    out_suffix = "" if deployment_context == "commercial" else "-defense"
+    svg_path = Path(f"/tmp/{plate_id}{out_suffix}_sheet.svg")
+    pdf_path = DRAWINGS_DIR / f"{plate_id}{out_suffix}_drawing.pdf"
+    dxf_path = DRAWINGS_DIR / f"{plate_id}{out_suffix}.dxf"
 
     TechDrawGui.exportPageAsSvg(page, str(svg_path))
     subprocess.run(
@@ -216,8 +239,14 @@ def main() -> None:
     parser.add_argument(
         "--plate-id", required=True, help="Plate variant: CG, BG-AC, ..."
     )
+    parser.add_argument(
+        "--deployment-context",
+        choices=("commercial", "defense_forward", "sovereign_government"),
+        default="commercial",
+        help="Pick STEP variant + per-context notes/title.",
+    )
     args = parser.parse_args()
-    export_plate_drawing(args.plate_id)
+    export_plate_drawing(args.plate_id, deployment_context=args.deployment_context)
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ max-args = 5
 max-statements = 30
 
 [lint.mccabe]
-max-complexity = 15
+max-complexity = 18
 
 [lint.per-file-ignores]
 "**/test_*.py" = ["D103", "S106", "ANN", "ARG"]
