@@ -1,5 +1,6 @@
 stages:
   - check
+  - deploy
   - mirror
 
 checks:
@@ -18,6 +19,20 @@ checks:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+
+deploy:
+  stage: deploy
+  only:
+    - main
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    ARCNODE_ARTIFACTS_BUCKET: arcnode-artifacts
+  script:
+    # Reason: publishes plate artifacts (spec/step/dxf/drawing_meta × commercial+defense)
+    # to s3://arcnode-artifacts/plates/{id}/v1/. edp-module-assemblies'
+    # plate_loader.fetch downloads from this prefix; without publish here,
+    # its CI test_defense_routes_to_evapco_dc_and_dod_bess fails on 404.
+    - uv run poe push-s3
 
 mirror:
   stage: mirror

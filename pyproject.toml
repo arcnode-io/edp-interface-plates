@@ -14,6 +14,7 @@ dependencies = [
     "cadquery>=2.7.0",
     "pygccx @ git+https://github.com/calculix/pygccx.git",
     "svgpathtools>=1.7.2",
+    "boto3>=1.35.0",
 ]
 
 [dependency-groups]
@@ -51,6 +52,7 @@ generate-plate-bg-ac = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH
 generate-plate-bg-dc = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id BG-DC'"
 generate-plate-cd = "bash -c 'mkdir -p output/drawings && DISPLAY= PYTHONPATH=/usr/lib/freecad/lib:. xvfb-run -a python3 cad/drawing/export_plate_drawing.py --plate-id CD'"
 healthcheck = "bash -c 'for tool in freecad ccx gmsh rsvg-convert; do command -v $tool >/dev/null || { echo \"MISSING: $tool\"; exit 1; }; done && echo TOOLS_READY'"
+push-s3 = { cmd = "python scripts/push_to_s3.py", env = { PYTHONPATH = "." } }
 sim = { cmd = "pytest -vv sim/", env = { PYTHONPATH = "." } }
 test = { cmd = "pytest -vv cad/ sim/", env = { PYTHONPATH = "." } }
 cover = { cmd = "pytest -vv --cov=cad --cov=sim cad/ sim/", env = { PYTHONPATH = "." } }
