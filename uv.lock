@@ -204,11 +204,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8e/0d/52d98722666d6fc6c3dd4c76df339501d6efd40e0ff95e6186a7b7f0befd/black-26.3.1-py3-none-any.whl", hash = "sha256:2bd5aa94fc267d38bb21a70d7410a89f1a1d318841855f698746f8e7f51acd1b", size = 207542, upload-time = "2026-03-12T03:36:01.668Z" },
 ]
 
-[package.optional-dependencies]
-d = [
-    { name = "aiohttp" },
-]
-
 [[package]]
 name = "bleach"
 version = "6.3.0"
@@ -539,7 +534,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "black", extra = ["d"] },
+    { name = "black" },
     { name = "jupyter" },
     { name = "nbconvert" },
     { name = "pip" },
@@ -567,7 +562,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "black", extras = ["d"], specifier = ">=26.3.1" },
+    { name = "black", specifier = ">=26.3.1" },
     { name = "jupyter", specifier = ">=1.0.0" },
     { name = "nbconvert", specifier = ">=7.16.0" },
     { name = "pip", specifier = ">=25.1.1" },
